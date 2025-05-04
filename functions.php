@@ -400,7 +400,7 @@ function watchmodmarket_create_pages() {
         'builder' => array(
             'title' => 'Watch Builder',
             'content' => '<!-- wp:paragraph --><p>Create your perfect timepiece by selecting and combining different watch components. Our interactive tool lets you visualize your design in real-time.</p><!-- /wp:paragraph -->',
-            'template' => 'watch-builder.php'
+            'template' => 'page-watch-builder.php'
         ),
         'group-buy' => array(
             'title' => 'Timepiece Futures',
@@ -1846,3 +1846,41 @@ function watchmodmarket_group_buy_scripts() {
     }
 }
 add_action('wp_enqueue_scripts', 'watchmodmarket_group_buy_scripts', 20);
+
+/**
+ * AJAX handler for adding group buy products to cart
+ */
+function watchmodmarket_add_group_buy_to_cart_ajax() {
+    // Check nonce for security
+    if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'watchmodmarket_ajax')) {
+        wp_send_json_error(array('message' => __('Security check failed', 'watchmodmarket')));
+        wp_die();
+    }
+    
+    // Get product ID from request
+    $product_id = isset($_POST['product_id']) ? intval($_POST['product_id']) : 0;
+    $quantity = isset($_POST['quantity']) ? intval($_POST['quantity']) : 1;
+    
+    // Validate product ID
+    if ($product_id <= 0) {
+        wp_send_json_error(array('message' => __('Invalid product ID', 'watchmodmarket')));
+        wp_die();
+    }
+    
+    // Add product to cart
+    $cart_item_key = WC()->cart->add_to_cart($product_id, $quantity);
+    
+    if (!$cart_item_key) {
+        wp_send_json_error(array('message' => __('Failed to add product to cart', 'watchmodmarket')));
+        wp_die();
+    }
+    
+    wp_send_json_success(array(
+        'message' => __('Product added to cart successfully', 'watchmodmarket'),
+        'cart_count' => WC()->cart->get_cart_contents_count(),
+        'cart_url' => wc_get_cart_url()
+    ));
+    wp_die();
+}
+add_action('wp_ajax_watchmodmarket_add_group_buy_to_cart', 'watchmodmarket_add_group_buy_to_cart_ajax');
+add_action('wp_ajax_nopriv_watchmodmarket_add_group_buy_to_cart', 'watchmodmarket_add_group_buy_to_cart_ajax');

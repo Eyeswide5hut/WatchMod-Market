@@ -14,30 +14,12 @@ get_header();
         <div class="container">
             <h1><?php echo esc_html__('Group Buy Portal', 'watchmodmarket'); ?></h1>
             <p class="tagline"><?php echo esc_html__('Exclusive Group Buys & Pre-Orders for Premium Watch Parts at Unbeatable Prices', 'watchmodmarket'); ?></p>
-            
-            <div class="hero-badges">
-                <span class="badge badge-discount"><?php echo esc_html__('Up to 40% Off Retail', 'watchmodmarket'); ?></span>
-                <span class="badge badge-limited"><?php echo esc_html__('Limited Production Runs', 'watchmodmarket'); ?></span>
-                <span class="badge badge-early"><?php echo esc_html__('Early Access to Exclusive Designs', 'watchmodmarket'); ?></span>
-            </div>
-            
-            <div class="hero-actions">
-                <a href="#active-buys" class="btn btn-primary"><?php echo esc_html__('Current Group Buys', 'watchmodmarket'); ?></a>
-                <a href="#upcoming" class="btn btn-secondary"><?php echo esc_html__('Pre-Order Now', 'watchmodmarket'); ?></a>
-            </div>
         </div>
     </div>
     
     <!-- Quick Navigation -->
     <nav class="quick-nav">
-        <div class="container quick-nav-container">
-            <div class="quick-links">
-                <a href="#active-buys"><?php echo esc_html__('Active Group Buys', 'watchmodmarket'); ?></a>
-                <a href="#upcoming"><?php echo esc_html__('Upcoming Pre-Orders', 'watchmodmarket'); ?></a>
-                <a href="#how-it-works"><?php echo esc_html__('How It Works', 'watchmodmarket'); ?></a>
-                <a href="#faq"><?php echo esc_html__('FAQs', 'watchmodmarket'); ?></a>
-            </div>
-            
+        <div class="container quick-nav-container">          
             <div class="quick-stats">
                 <div class="stat-item">
                     <span><?php echo esc_html__('Active Campaigns:', 'watchmodmarket'); ?></span>
@@ -54,44 +36,6 @@ get_header();
             </div>
         </div>
     </nav>
-    
-    <?php
-    // Get closest ending group buy
-    $ending_group_buy = watchmodmarket_get_closest_ending_group_buy();
-    
-    if ($ending_group_buy) :
-        $end_date = strtotime(get_post_meta($ending_group_buy->ID, '_groupbuy_end_date', true));
-        $current_time = current_time('timestamp');
-        $time_left = $end_date - $current_time;
-        
-        $days_left = floor($time_left / (60 * 60 * 24));
-        $hours_left = floor(($time_left % (60 * 60 * 24)) / (60 * 60));
-        $minutes_left = floor(($time_left % (60 * 60)) / 60);
-    ?>
-    <!-- Notifications -->
-    <div class="status-notification">
-        <div class="container status-notification-content">
-            <span class="status-badge"><?php echo esc_html__('Ending Soon', 'watchmodmarket'); ?></span>
-            <div class="status-message">
-                <strong><?php echo esc_html($ending_group_buy->post_title); ?></strong> <?php echo esc_html__('ending in', 'watchmodmarket'); ?> <span class="countdown">
-                    <div class="countdown-item">
-                        <span class="countdown-number"><?php echo esc_html($days_left); ?></span>
-                        <span class="countdown-label"><?php echo esc_html__('Days', 'watchmodmarket'); ?></span>
-                    </div>
-                    <div class="countdown-item">
-                        <span class="countdown-number"><?php echo esc_html($hours_left); ?></span>
-                        <span class="countdown-label"><?php echo esc_html__('Hours', 'watchmodmarket'); ?></span>
-                    </div>
-                    <div class="countdown-item">
-                        <span class="countdown-number"><?php echo esc_html($minutes_left); ?></span>
-                        <span class="countdown-label"><?php echo esc_html__('Min', 'watchmodmarket'); ?></span>
-                    </div>
-                </span> - <?php echo esc_html__('Save up to 35% by joining now!', 'watchmodmarket'); ?>
-            </div>
-            <a href="<?php echo esc_url(get_permalink($ending_group_buy->ID)); ?>" class="btn btn-secondary"><?php echo esc_html__('Join Now', 'watchmodmarket'); ?></a>
-        </div>
-    </div>
-    <?php endif; ?>
     
     <!-- How It Works -->
     <section id="how-it-works" class="how-it-works">
@@ -230,7 +174,12 @@ get_header();
                         
                         // Calculate days left
                         $days_left = ceil((strtotime($end_date) - current_time('timestamp')) / (60 * 60 * 24));
-                        $discount_percent = round(($regular_price - $group_price) / $regular_price * 100);
+                        
+                        // Fix: Convert strings to floats before calculation
+                        $discount_percent = 0;
+                        if (!empty($regular_price) && !empty($group_price) && floatval($regular_price) > 0) {
+                            $discount_percent = round(((floatval($regular_price) - floatval($group_price)) / floatval($regular_price)) * 100);
+                        }
                         ?>
                         
                         <div class="group-buy-card">
@@ -273,7 +222,7 @@ get_header();
                                         <?php endif; ?>
                                     </div>
                                     
-                                    <a href="<?php the_permalink(); ?>" class="btn btn-primary btn-join">
+                                    <a href="#" class="btn btn-primary btn-join" data-product-id="<?php echo esc_attr($product->get_id()); ?>">
                                         <?php echo esc_html__('Join Now', 'watchmodmarket'); ?>
                                     </a>
                                 </div>

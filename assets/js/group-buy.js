@@ -496,3 +496,55 @@
     });
 
 })(jQuery);
+
+jQuery(document).ready(function ($) {
+    // Group Buy - Add to Cart functionality
+    $('.btn-join').on('click', function (e) {
+        e.preventDefault();
+
+        const $button = $(this);
+        const productId = $button.data('product-id');
+
+        if (!productId) {
+            console.error('Product ID not found');
+            return;
+        }
+
+        $button.addClass('loading').text('Adding...');
+
+        $.ajax({
+            url: watchmodmarket_ajax.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'watchmodmarket_add_group_buy_to_cart',
+                product_id: productId,
+                quantity: 1,
+                nonce: watchmodmarket_ajax.nonce
+            },
+            success: function (response) {
+                if (response.success) {
+                    $button.removeClass('loading').text('Added!');
+
+                    // Update cart count in header
+                    $('.cart-count').text(response.data.cart_count);
+
+                    // Optional: redirect to cart
+                    if (confirm('Product added to cart! Would you like to view your cart?')) {
+                        window.location.href = response.data.cart_url;
+                    }
+
+                    setTimeout(function () {
+                        $button.text('Join Now');
+                    }, 2000);
+                } else {
+                    alert(response.data.message || 'Error adding product to cart');
+                    $button.removeClass('loading').text('Join Now');
+                }
+            },
+            error: function () {
+                alert('An error occurred. Please try again.');
+                $button.removeClass('loading').text('Join Now');
+            }
+        });
+    });
+});

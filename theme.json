@@ -388,7 +388,7 @@
             ]
         },
         {
-            "name": "page-builder",
+            "name": "page-watch-builder.php",
             "title": "Watch Builder",
             "postTypes": [
                 "page"
