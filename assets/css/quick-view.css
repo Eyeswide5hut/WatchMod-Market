@@ -1,0 +1,254 @@
+/* 
+ * Quick View Modal Styling
+ * These styles ensure the modal displays correctly
+ */
+
+/* Modal Container */
+.product-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 9999;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+/* Modal Content */
+.product-modal-content {
+    position: relative;
+    background-color: white;
+    max-width: 900px;
+    width: 90%;
+    margin: 50px auto;
+    border: 3px solid var(--color-dark);
+    box-shadow: var(--shadow-lg);
+    animation: modalSlideDown 0.3s forwards;
+}
+
+@keyframes modalSlideDown {
+    from {
+        transform: translateY(-30px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Close Button */
+.close-modal {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    font-size: 24px;
+    cursor: pointer;
+    z-index: 2;
+    width: 30px;
+    height: 30px;
+    background: var(--color-dark);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+}
+
+.close-modal:hover {
+    background-color: var(--color-primary);
+}
+
+/* Modal Body */
+.modal-body {
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Modal Loading */
+.modal-loading {
+    padding: 30px;
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* Product Content Layout */
+.modal-product-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+/* Product Image */
+.product-image-container {
+    border: 2px solid var(--color-dark);
+    overflow: hidden;
+}
+
+.product-image-container img {
+    width: 100%;
+    height: auto;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.product-image-container img:hover {
+    transform: scale(1.05);
+}
+
+/* Product Details */
+.product-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.product-title {
+    font-size: 24px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    font-weight: 900;
+    font-family: var(--font-heading);
+}
+
+.product-price {
+    font-size: 28px;
+    font-weight: 900;
+    margin-bottom: 15px;
+    background-color: #FFFF00;
+    padding: 5px 10px;
+    display: inline-block;
+    border: 2px solid var(--color-dark);
+    transform: rotate(2deg);
+}
+
+.product-description {
+    margin-bottom: 20px;
+    color: var(--color-light-text);
+}
+
+.product-attributes {
+    background-color: var(--color-background);
+    padding: 15px;
+    margin-bottom: 20px;
+    border-left: 3px solid var(--color-primary);
+}
+
+.product-attributes h4 {
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    font-weight: 900;
+}
+
+.product-attributes ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.product-attributes li {
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+.product-attributes li span {
+    font-weight: bold;
+}
+
+/* Product Actions */
+.product-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: auto;
+}
+
+/* Quantity Input */
+.quantity {
+    display: flex;
+    border: 2px solid var(--color-dark);
+}
+
+.qty-btn {
+    width: 30px;
+    height: 40px;
+    background: none;
+    border: none;
+    border-right: 2px solid var(--color-dark);
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.qty-btn.plus {
+    border-right: none;
+    border-left: 2px solid var(--color-dark);
+}
+
+.qty-btn:hover {
+    background-color: var(--color-background);
+}
+
+.qty-input {
+    width: 50px;
+    height: 40px;
+    border: none;
+    text-align: center;
+    font-weight: bold;
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+
+.qty-input::-webkit-outer-spin-button,
+.qty-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Add to Cart Button */
+.add-to-cart-btn {
+    flex-grow: 1;
+    padding: 0 20px;
+    background-color: var(--color-primary);
+    color: white;
+    border: 2px solid var(--color-dark);
+    font-weight: 900;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: var(--font-heading);
+}
+
+.add-to-cart-btn:hover {
+    background-color: var(--color-dark);
+    transform: translate(-3px, -3px);
+    box-shadow: 3px 3px 0 var(--color-primary);
+}
+
+/* Prevent scrolling when modal is open */
+body.modal-open {
+    overflow: hidden;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .modal-product-content {
+        grid-template-columns: 1fr;
+    }
+
+    .product-image-container {
+        max-height: 300px;
+    }
+
+    .product-actions {
+        flex-direction: column;
+    }
+
+    .quantity {
+        width: 100%;
+    }
+}

@@ -1,0 +1,653 @@
+/* community.css - Styles specific to the community page */
+
+/* Community Hero */
+.community-hero {
+    background-color: var(--color-dark);
+    background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.85)), url('path/to/community-bg.jpg');
+    background-size: cover;
+    background-position: center;
+    color: white;
+    padding: var(--space-xl) 0;
+    text-align: center;
+    position: relative;
+}
+
+.community-hero::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(45deg,
+            transparent,
+            transparent 20px,
+            rgba(255, 255, 255, 0.03) 20px,
+            rgba(255, 255, 255, 0.03) 40px);
+}
+
+.community-hero h1 {
+    font-size: 3rem;
+    margin-bottom: var(--space-md);
+    position: relative;
+    z-index: 1;
+}
+
+.community-hero p {
+    font-size: 1.2rem;
+    max-width: 700px;
+    margin: 0 auto var(--space-lg);
+    opacity: 0.9;
+    position: relative;
+    z-index: 1;
+}
+
+/* Community Grid */
+.community-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-xl);
+    margin-top: var(--space-lg);
+}
+
+/* Community Item Styles */
+.community-item {
+    background-color: white;
+    border: 3px solid var(--color-dark);
+    box-shadow: var(--shadow-sm);
+    padding: var(--space-lg);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.community-item:hover {
+    transform: translateY(-10px);
+    box-shadow: var(--shadow-lg);
+}
+
+.community-item::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 0 50px 50px 0;
+    border-color: transparent var(--color-primary) transparent transparent;
+    transition: all 0.3s ease;
+    z-index: 1;
+}
+
+.community-item:hover::after {
+    border-width: 0 70px 70px 0;
+}
+
+.community-item h3 {
+    font-size: 1.5rem;
+    margin-bottom: var(--space-sm);
+    color: var(--color-dark);
+}
+
+.community-item p {
+    margin-bottom: var(--space-lg);
+    color: var(--color-light-text);
+}
+
+.community-item .btn {
+    position: relative;
+    z-index: 2;
+    transition: all 0.3s ease;
+}
+
+.community-item:hover .btn {
+    transform: scale(1.05);
+}
+
+/* Forums Section */
+.community-item.forums::before {
+    content: "💬";
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 2rem;
+    opacity: 0.1;
+    z-index: 0;
+}
+
+/* Design Showcase Section */
+.community-item.showcase::before {
+    content: "🏆";
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 2rem;
+    opacity: 0.1;
+    z-index: 0;
+}
+
+/* Competitions Section */
+.community-item.competitions::before {
+    content: "🏅";
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 2rem;
+    opacity: 0.1;
+    z-index: 0;
+}
+
+/* Tutorials Section */
+.community-item.tutorials::before {
+    content: "📚";
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 2rem;
+    opacity: 0.1;
+    z-index: 0;
+}
+
+/* Featured Members Section */
+.featured-members {
+    margin-top: var(--space-xxl);
+    margin-bottom: var(--space-xxl);
+    position: relative;
+}
+
+.featured-members::before {
+    content: "MEMBERS";
+    position: absolute;
+    top: -30px;
+    right: 20px;
+    font-family: var(--font-heading);
+    font-size: 80px;
+    opacity: 0.05;
+    font-weight: 900;
+    z-index: 0;
+}
+
+.featured-members h2 {
+    margin-bottom: var(--space-xl);
+    position: relative;
+    z-index: 1;
+}
+
+.members-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-lg);
+    position: relative;
+    z-index: 1;
+}
+
+.member-card {
+    background-color: white;
+    border: 3px solid var(--color-dark);
+    text-align: center;
+    padding: var(--space-lg);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+}
+
+.member-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-md);
+}
+
+.member-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    margin: 0 auto var(--space-md);
+    border: 3px solid var(--color-primary);
+    overflow: hidden;
+    position: relative;
+}
+
+.member-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.member-card:hover .member-avatar img {
+    transform: scale(1.1);
+}
+
+.member-name {
+    font-size: 1.2rem;
+    margin-bottom: var(--space-xs);
+    font-weight: 900;
+}
+
+.member-title {
+    color: var(--color-light-text);
+    margin-bottom: var(--space-md);
+    font-size: 0.9rem;
+}
+
+.member-stats {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-md);
+    margin-bottom: var(--space-md);
+    font-size: 0.9rem;
+}
+
+.member-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.stat-number {
+    font-weight: 900;
+    color: var(--color-primary);
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: var(--color-light-text);
+}
+
+.member-social {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-sm);
+}
+
+.social-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: var(--color-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.social-icon:hover {
+    background-color: var(--color-primary);
+    color: white;
+    transform: translateY(-3px);
+}
+
+/* Recent Forum Posts Section */
+.recent-posts {
+    margin-top: var(--space-xxl);
+}
+
+.recent-posts h2 {
+    margin-bottom: var(--space-xl);
+}
+
+.posts-list {
+    background-color: white;
+    border: 3px solid var(--color-dark);
+    box-shadow: var(--shadow-md);
+}
+
+.post-item {
+    padding: var(--space-lg);
+    border-bottom: 1px solid var(--color-light);
+    display: flex;
+    gap: var(--space-lg);
+    transition: background-color 0.2s ease;
+}
+
+.post-item:last-child {
+    border-bottom: none;
+}
+
+.post-item:hover {
+    background-color: rgba(255, 92, 0, 0.05);
+}
+
+.post-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 2px solid var(--color-light);
+    overflow: hidden;
+}
+
+.post-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.post-content {
+    flex: 1;
+}
+
+.post-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: var(--space-xs);
+}
+
+.post-title {
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: var(--color-dark);
+    transition: color 0.2s ease;
+}
+
+.post-item:hover .post-title {
+    color: var(--color-primary);
+}
+
+.post-meta {
+    font-size: 0.85rem;
+    color: var(--color-light-text);
+}
+
+.post-category {
+    display: inline-block;
+    padding: 2px 8px;
+    background-color: var(--color-background);
+    border-radius: 20px;
+    font-size: 0.8rem;
+    margin-right: var(--space-xs);
+}
+
+.post-excerpt {
+    color: var(--color-light-text);
+    font-size: 0.95rem;
+    margin-bottom: var(--space-sm);
+}
+
+.post-stats {
+    display: flex;
+    gap: var(--space-md);
+    font-size: 0.85rem;
+    color: var(--color-light-text);
+}
+
+.post-stat {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+/* Recent Competitions Section */
+.recent-competitions {
+    margin-top: var(--space-xxl);
+    margin-bottom: var(--space-xxl);
+}
+
+.recent-competitions h2 {
+    margin-bottom: var(--space-xl);
+}
+
+.competition-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-xl);
+}
+
+.competition-card {
+    background-color: white;
+    border: 3px solid var(--color-dark);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+}
+
+.competition-card:hover {
+    transform: translateY(-10px);
+    box-shadow: var(--shadow-lg);
+}
+
+.competition-image {
+    height: 200px;
+    overflow: hidden;
+    position: relative;
+    border-bottom: 3px solid var(--color-dark);
+}
+
+.competition-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.competition-card:hover .competition-image img {
+    transform: scale(1.1);
+}
+
+.competition-status {
+    position: absolute;
+    top: var(--space-sm);
+    right: var(--space-sm);
+    padding: 3px 10px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    z-index: 2;
+}
+
+.status-active {
+    background-color: var(--color-success);
+    color: white;
+}
+
+.status-upcoming {
+    background-color: var(--color-primary);
+    color: white;
+}
+
+.status-past {
+    background-color: var(--color-light);
+    color: var(--color-dark);
+}
+
+.competition-content {
+    padding: var(--space-lg);
+}
+
+.competition-title {
+    font-size: 1.2rem;
+    margin-bottom: var(--space-xs);
+    font-weight: 900;
+}
+
+.competition-details {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: var(--space-sm);
+    font-size: 0.9rem;
+    color: var(--color-light-text);
+}
+
+.competition-date {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+.competition-entries {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+.competition-description {
+    margin-bottom: var(--space-md);
+    color: var(--color-light-text);
+}
+
+.competition-prize {
+    background-color: var(--color-background);
+    padding: var(--space-sm);
+    margin-bottom: var(--space-md);
+    font-weight: bold;
+    border-left: 3px solid var(--color-primary);
+}
+
+.competition-actions {
+    display: flex;
+    gap: var(--space-sm);
+}
+
+.competition-actions .btn {
+    flex: 1;
+    padding: var(--space-sm);
+    font-size: 0.9rem;
+}
+
+/* Join Community CTA */
+.join-community {
+    background-color: var(--color-primary);
+    color: white;
+    text-align: center;
+    padding: var(--space-xxl) 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.join-community::before,
+.join-community::after {
+    content: "";
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+}
+
+.join-community::before {
+    top: -50px;
+    left: -50px;
+}
+
+.join-community::after {
+    bottom: -50px;
+    right: -50px;
+}
+
+.join-community h2 {
+    font-size: 2.5rem;
+    margin-bottom: var(--space-md);
+    color: white;
+    background: none;
+    box-shadow: none;
+    padding: 0;
+    transform: none;
+}
+
+.join-community p {
+    font-size: 1.2rem;
+    max-width: 700px;
+    margin: 0 auto var(--space-xl);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.join-community .btn {
+    padding: var(--space-md) var(--space-xl);
+    font-size: 1.1rem;
+    border: 3px solid white;
+    background-color: white;
+    color: var(--color-primary);
+    transition: all 0.3s ease;
+}
+
+.join-community .btn:hover {
+    background-color: transparent;
+    color: white;
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Media Queries */
+@media (max-width: 992px) {
+    .community-grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-lg);
+    }
+
+    .members-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .competition-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .post-item {
+        flex-direction: column;
+        gap: var(--space-md);
+    }
+
+    .post-avatar {
+        width: 50px;
+        height: 50px;
+    }
+
+    .competition-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .join-community h2 {
+        font-size: 2rem;
+    }
+
+    .join-community p {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .community-hero h1 {
+        font-size: 2.5rem;
+    }
+
+    .members-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .member-stats {
+        flex-wrap: wrap;
+        justify-content: space-around;
+    }
+
+    .post-header {
+        flex-direction: column;
+        gap: var(--space-xs);
+    }
+
+    .post-stats {
+        flex-wrap: wrap;
+    }
+}
+
+.community-grid {
+    margin-bottom: var(--space-xxl);
+}
+
+.recent-posts h2 {
+    margin-bottom: var(--space-xl);
+}
+
+.recent-posts {
+    margin-top: var(--space-xxl);
+    margin-bottom: var(--space-xxl);
+}
+
+.recent-competitions {
+    margin-top: var(--space-xxl);
+    margin-bottom: var(--space-xxl);
+}
+
+.join-community {
+    margin-top: var(--space-xxl);
+}
