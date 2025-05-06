@@ -37,46 +37,6 @@ get_header();
         </div>
     </nav>
     
-    <!-- How It Works -->
-    <section id="how-it-works" class="how-it-works">
-        <div class="container">
-            <div class="section-header">
-                <h2><?php echo esc_html__('How It Works', 'watchmodmarket'); ?></h2>
-                <p class="section-subheading"><?php echo esc_html__('Shop smarter with our community-driven buying programs', 'watchmodmarket'); ?></p>
-            </div>
-            
-            <div class="process-grid">
-                <div class="process-item">
-                    <div class="process-number">1</div>
-                    <div class="process-icon" aria-hidden="true">👥</div>
-                    <h3><?php echo esc_html__('Join a Group Buy', 'watchmodmarket'); ?></h3>
-                    <p><?php echo esc_html__('Reserve your spot in an active group buy to access exclusive pricing on premium parts. No payment until the minimum order is reached.', 'watchmodmarket'); ?></p>
-                </div>
-                
-                <div class="process-item">
-                    <div class="process-number">2</div>
-                    <div class="process-icon" aria-hidden="true">💰</div>
-                    <h3><?php echo esc_html__('Secure Your Price', 'watchmodmarket'); ?></h3>
-                    <p><?php echo esc_html__('Once the target is met, pay the discounted price to confirm your participation. Save 20-40% off retail on premium components.', 'watchmodmarket'); ?></p>
-                </div>
-                
-                <div class="process-item">
-                    <div class="process-number">3</div>
-                    <div class="process-icon" aria-hidden="true">⏱️</div>
-                    <h3><?php echo esc_html__('Track Production', 'watchmodmarket'); ?></h3>
-                    <p><?php echo esc_html__('Get regular updates on your order. Most group buys ship in 4-12 weeks. We keep you informed every step of the way.', 'watchmodmarket'); ?></p>
-                </div>
-                
-                <div class="process-item">
-                    <div class="process-number">4</div>
-                    <div class="process-icon" aria-hidden="true">📦</div>
-                    <h3><?php echo esc_html__('Receive Your Parts', 'watchmodmarket'); ?></h3>
-                    <p><?php echo esc_html__('Your premium components arrive directly to your door. All parts come with our standard warranty and satisfaction guarantee.', 'watchmodmarket'); ?></p>
-                </div>
-            </div>
-        </div>
-    </section>
-    
     <!-- Active Group Buys -->
     <section id="active-buys" class="active-group-buys">
         <div class="container">
@@ -384,69 +344,43 @@ get_header();
             </div>
         </div>
     </section>
-    
-    <!-- FAQ Section -->
-    <section id="faq" class="faq-section">
+
+    <!-- How It Works -->
+    <section id="how-it-works" class="how-it-works">
         <div class="container">
             <div class="section-header">
-                <h2><?php echo esc_html__('Frequently Asked Questions', 'watchmodmarket'); ?></h2>
-                <p class="section-subheading"><?php echo esc_html__('Everything you need to know about Group Buys and Pre-Orders', 'watchmodmarket'); ?></p>
+                <h2><?php echo esc_html__('How It Works', 'watchmodmarket'); ?></h2>
+                <p class="section-subheading"><?php echo esc_html__('Shop smarter with our community-driven buying programs', 'watchmodmarket'); ?></p>
             </div>
             
-            <div class="faq-grid">
-                <div class="faq-item">
-                    <h3 class="faq-question" id="faq1">
-                        <button class="faq-toggle" aria-expanded="false" aria-controls="faq-answer-1">
-                            <?php echo esc_html__('What is the difference between a Group Buy and a Pre-Order?', 'watchmodmarket'); ?>
-                            <span class="toggle-icon">+</span>
-                        </button>
-                    </h3>
-                    <div id="faq-answer-1" class="faq-answer" hidden>
-                        <p><?php echo esc_html__('A Group Buy aggregates multiple buyers to achieve bulk pricing discounts on existing products. Pre-Orders secure your place in line for upcoming or limited-edition items before they\'re officially released, often with special early-bird pricing.', 'watchmodmarket'); ?></p>
-                    </div>
+            <div class="process-grid">
+                <div class="process-item">
+                    <div class="process-number">1</div>
+                    <div class="process-icon" aria-hidden="true">👥</div>
+                    <h3><?php echo esc_html__('Join a Group Buy', 'watchmodmarket'); ?></h3>
+                    <p><?php echo esc_html__('Reserve your spot in an active group buy to access exclusive pricing on premium parts. No payment until the minimum order is reached.', 'watchmodmarket'); ?></p>
                 </div>
                 
-                <div class="faq-item">
-                    <h3 class="faq-question" id="faq2">
-                        <button class="faq-toggle" aria-expanded="false" aria-controls="faq-answer-2">
-                            <?php echo esc_html__('How much deposit is required for Pre-Orders?', 'watchmodmarket'); ?>
-                            <span class="toggle-icon">+</span>
-                        </button>
-                    </h3>
-                    <div id="faq-answer-2" class="faq-answer" hidden>
-                        <p><?php echo esc_html__('Deposit amounts vary by product, but typically range from 20-30% of the total pre-order price. The specific amount is clearly displayed on each pre-order listing. The remaining balance is charged before shipping.', 'watchmodmarket'); ?></p>
-                    </div>
+                <div class="process-item">
+                    <div class="process-number">2</div>
+                    <div class="process-icon" aria-hidden="true">💰</div>
+                    <h3><?php echo esc_html__('Secure Your Price', 'watchmodmarket'); ?></h3>
+                    <p><?php echo esc_html__('Once the target is met, pay the discounted price to confirm your participation. Save 20-40% off retail on premium components.', 'watchmodmarket'); ?></p>
                 </div>
                 
-                <div class="faq-item">
-                    <h3 class="faq-question" id="faq3">
-                        <button class="faq-toggle" aria-expanded="false" aria-controls="faq-answer-3">
-                            <?php echo esc_html__('What happens if a Group Buy doesn\'t reach its minimum participants?', 'watchmodmarket'); ?>
-                            <span class="toggle-icon">+</span>
-                        </button>
-                    </h3>
-                    <div id="faq-answer-3" class="faq-answer" hidden>
-                        <p><?php echo esc_html__('If a Group Buy doesn\'t reach its minimum threshold, you\'ll receive a full refund of your payment. We\'ll notify you via email about the status of your refund, which typically processes within 3-5 business days.', 'watchmodmarket'); ?></p>
-                    </div>
+                <div class="process-item">
+                    <div class="process-number">3</div>
+                    <div class="process-icon" aria-hidden="true">⏱️</div>
+                    <h3><?php echo esc_html__('Track Production', 'watchmodmarket'); ?></h3>
+                    <p><?php echo esc_html__('Get regular updates on your order. Most group buys ship in 4-12 weeks. We keep you informed every step of the way.', 'watchmodmarket'); ?></p>
                 </div>
                 
-                <div class="faq-item">
-                    <h3 class="faq-question" id="faq4">
-                        <button class="faq-toggle" aria-expanded="false" aria-controls="faq-answer-4">
-                            <?php echo esc_html__('Can I cancel my participation in a Group Buy or Pre-Order?', 'watchmodmarket'); ?>
-                            <span class="toggle-icon">+</span>
-                        </button>
-                    </h3>
-                    <div id="faq-answer-4" class="faq-answer" hidden>
-                        <p><?php echo esc_html__('For Group Buys, you can cancel and receive a full refund before the end date. Once the Group Buy closes, cancellations aren\'t possible. For Pre-Orders, deposits are generally non-refundable as they secure production capacity, but each listing specifies the exact cancellation policy.', 'watchmodmarket'); ?></p>
-                    </div>
+                <div class="process-item">
+                    <div class="process-number">4</div>
+                    <div class="process-icon" aria-hidden="true">📦</div>
+                    <h3><?php echo esc_html__('Receive Your Parts', 'watchmodmarket'); ?></h3>
+                    <p><?php echo esc_html__('Your premium components arrive directly to your door. All parts come with our standard warranty and satisfaction guarantee.', 'watchmodmarket'); ?></p>
                 </div>
-            </div>
-            
-            <div class="faq-more">
-                <a href="<?php echo esc_url(get_permalink(get_page_by_path('faq'))); ?>" class="btn btn-secondary">
-                    <?php echo esc_html__('View All FAQs', 'watchmodmarket'); ?>
-                </a>
             </div>
         </div>
     </section>
@@ -584,6 +518,73 @@ get_header();
                         </label>
                     </div>
                 </form>
+            </div>
+        </div>
+    </section>
+
+    
+    <!-- FAQ Section -->
+    <section id="faq" class="faq-section">
+        <div class="container">
+            <div class="section-header">
+                <h2><?php echo esc_html__('Frequently Asked Questions', 'watchmodmarket'); ?></h2>
+                <p class="section-subheading"><?php echo esc_html__('Everything you need to know about Group Buys and Pre-Orders', 'watchmodmarket'); ?></p>
+            </div>
+            
+            <div class="faq-grid">
+                <div class="faq-item">
+                    <h3 class="faq-question" id="faq1">
+                        <button class="faq-toggle" aria-expanded="false" aria-controls="faq-answer-1">
+                            <?php echo esc_html__('What is the difference between a Group Buy and a Pre-Order?', 'watchmodmarket'); ?>
+                            <span class="toggle-icon">+</span>
+                        </button>
+                    </h3>
+                    <div id="faq-answer-1" class="faq-answer" hidden>
+                        <p><?php echo esc_html__('A Group Buy aggregates multiple buyers to achieve bulk pricing discounts on existing products. Pre-Orders secure your place in line for upcoming or limited-edition items before they\'re officially released, often with special early-bird pricing.', 'watchmodmarket'); ?></p>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <h3 class="faq-question" id="faq2">
+                        <button class="faq-toggle" aria-expanded="false" aria-controls="faq-answer-2">
+                            <?php echo esc_html__('How much deposit is required for Pre-Orders?', 'watchmodmarket'); ?>
+                            <span class="toggle-icon">+</span>
+                        </button>
+                    </h3>
+                    <div id="faq-answer-2" class="faq-answer" hidden>
+                        <p><?php echo esc_html__('Deposit amounts vary by product, but typically range from 20-30% of the total pre-order price. The specific amount is clearly displayed on each pre-order listing. The remaining balance is charged before shipping.', 'watchmodmarket'); ?></p>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <h3 class="faq-question" id="faq3">
+                        <button class="faq-toggle" aria-expanded="false" aria-controls="faq-answer-3">
+                            <?php echo esc_html__('What happens if a Group Buy doesn\'t reach its minimum participants?', 'watchmodmarket'); ?>
+                            <span class="toggle-icon">+</span>
+                        </button>
+                    </h3>
+                    <div id="faq-answer-3" class="faq-answer" hidden>
+                        <p><?php echo esc_html__('If a Group Buy doesn\'t reach its minimum threshold, you\'ll receive a full refund of your payment. We\'ll notify you via email about the status of your refund, which typically processes within 3-5 business days.', 'watchmodmarket'); ?></p>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <h3 class="faq-question" id="faq4">
+                        <button class="faq-toggle" aria-expanded="false" aria-controls="faq-answer-4">
+                            <?php echo esc_html__('Can I cancel my participation in a Group Buy or Pre-Order?', 'watchmodmarket'); ?>
+                            <span class="toggle-icon">+</span>
+                        </button>
+                    </h3>
+                    <div id="faq-answer-4" class="faq-answer" hidden>
+                        <p><?php echo esc_html__('For Group Buys, you can cancel and receive a full refund before the end date. Once the Group Buy closes, cancellations aren\'t possible. For Pre-Orders, deposits are generally non-refundable as they secure production capacity, but each listing specifies the exact cancellation policy.', 'watchmodmarket'); ?></p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="faq-more">
+                <a href="<?php echo esc_url(get_permalink(get_page_by_path('faq'))); ?>" class="btn btn-secondary">
+                    <?php echo esc_html__('View All FAQs', 'watchmodmarket'); ?>
+                </a>
             </div>
         </div>
     </section>
