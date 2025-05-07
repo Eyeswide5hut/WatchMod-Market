@@ -1,0 +1,460 @@
+/**
+ * Watch Marketplace Styles
+ * Neo-brutalist style matching the overall theme
+ */
+
+/* Main container */
+.marketplace-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Marketplace Banner */
+.marketplace-banner {
+    background-color: var(--color-primary);
+    color: var(--color-white);
+    padding: 40px;
+    margin-bottom: 40px;
+    border: 3px solid var(--color-dark);
+    box-shadow: 8px 8px 0 var(--color-dark);
+    position: relative;
+    overflow: hidden;
+}
+
+.marketplace-banner::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 150px;
+    background-image: url('../images/watch-pattern.svg');
+    opacity: 0.1;
+    z-index: 0;
+}
+
+.marketplace-banner-content {
+    position: relative;
+    z-index: 1;
+    max-width: 600px;
+}
+
+.marketplace-banner h1 {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    font-weight: 900;
+}
+
+.marketplace-tagline {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+}
+
+.btn-large {
+    font-size: 1.2rem;
+    padding: 12px 24px;
+    text-transform: uppercase;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: 3px solid var(--color-dark);
+}
+
+.btn-large:hover {
+    transform: translate(-4px, -4px);
+    box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.8);
+}
+
+/* Marketplace Benefits */
+.marketplace-benefits {
+    margin-bottom: 40px;
+    background-color: var(--color-light);
+    padding: 30px;
+    border: 3px solid var(--color-dark);
+}
+
+.marketplace-benefits h2 {
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 2rem;
+    text-transform: uppercase;
+    font-weight: 900;
+}
+
+.benefits-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.benefit-item {
+    background-color: var(--color-white);
+    padding: 20px;
+    border: 3px solid var(--color-dark);
+    text-align: center;
+    transition: transform 0.2s;
+}
+
+.benefit-item:hover {
+    transform: translateY(-5px);
+}
+
+.benefit-icon {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+}
+
+.benefit-item h3 {
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+
+/* Marketplace Filters */
+.marketplace-filters {
+    margin-bottom: 40px;
+    background-color: var(--color-white);
+    padding: 20px;
+    border: 3px solid var(--color-dark);
+}
+
+.filters-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: flex-end;
+}
+
+.filter-group {
+    flex: 1;
+    min-width: 200px;
+}
+
+.filter-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 700;
+}
+
+.filter-group select,
+.filter-group input {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid var(--color-dark);
+    font-family: var(--font-body);
+    background-color: var(--color-white);
+}
+
+.filter-group select:focus,
+.filter-group input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px rgba(var(--color-primary-rgb), 0.2);
+}
+
+.price-inputs {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.price-separator {
+    flex-shrink: 0;
+    font-weight: bold;
+}
+
+.filter-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.reset-filters {
+    color: var(--color-primary);
+    text-decoration: underline;
+    font-weight: 600;
+}
+
+/* Marketplace Listings */
+.marketplace-listings {
+    margin-bottom: 60px;
+}
+
+.section-title {
+    font-size: 1.8rem;
+    margin-bottom: 25px;
+    padding-bottom: 10px;
+    border-bottom: 3px solid var(--color-dark);
+}
+
+.listings-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 30px;
+}
+
+.listing-card {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--color-white);
+    border: 3px solid var(--color-dark);
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+@media (min-width: 768px) {
+    .listing-card {
+        flex-direction: row;
+    }
+}
+
+.listing-card:hover {
+    transform: translate(-4px, -4px);
+    box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.1);
+}
+
+.listing-image {
+    flex: 0 0 300px;
+    overflow: hidden;
+    position: relative;
+}
+
+.listing-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s;
+}
+
+.listing-card:hover .listing-image img {
+    transform: scale(1.05);
+}
+
+.listing-content {
+    flex: 1;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.listing-title {
+    margin-bottom: 10px;
+    font-size: 1.4rem;
+}
+
+.listing-title a {
+    color: var(--color-dark);
+    text-decoration: none;
+}
+
+.listing-title a:hover {
+    color: var(--color-primary);
+}
+
+.listing-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+}
+
+.listing-brand {
+    font-weight: 700;
+    color: var(--color-primary);
+}
+
+.listing-model,
+.listing-year,
+.listing-condition {
+    color: var(--color-light-text);
+}
+
+.listing-description {
+    margin-bottom: 20px;
+    flex-grow: 1;
+}
+
+.listing-footer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 20px;
+    margin-top: auto;
+    padding-top: 15px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.listing-price {
+    font-size: 1.6rem;
+    font-weight: 900;
+    color: var(--color-dark);
+}
+
+.listing-seller {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    font-size: 0.9rem;
+}
+
+.seller-name {
+    font-weight: 600;
+}
+
+.seller-rating {
+    color: #FF9900;
+}
+
+.listing-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    width: 100%;
+}
+
+@media (min-width: 768px) {
+    .listing-actions {
+        width: auto;
+        margin-top: 0;
+    }
+}
+
+.listing-actions .btn {
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.no-listings {
+    text-align: center;
+    padding: 60px 20px;
+    background-color: var(--color-light);
+    border: 3px solid var(--color-dark);
+}
+
+.no-listings-icon {
+    font-size: 3rem;
+    margin-bottom: 20px;
+}
+
+.no-listings h3 {
+    margin-bottom: 15px;
+    font-size: 1.4rem;
+}
+
+.no-listings p {
+    max-width: 500px;
+    margin: 0 auto 30px;
+}
+
+/* Pagination */
+.marketplace-pagination {
+    margin-top: 40px;
+    text-align: center;
+}
+
+.marketplace-pagination .page-numbers {
+    display: inline-block;
+    padding: 8px 12px;
+    margin: 0 5px;
+    border: 2px solid var(--color-dark);
+    background-color: var(--color-white);
+    color: var(--color-dark);
+    text-decoration: none;
+    font-weight: 700;
+    transition: all 0.2s;
+}
+
+.marketplace-pagination .page-numbers.current {
+    background-color: var(--color-primary);
+    color: var(--color-white);
+    border-color: var(--color-primary);
+}
+
+.marketplace-pagination .page-numbers:hover {
+    background-color: var(--color-dark);
+    color: var(--color-white);
+}
+
+/* Info Box */
+.marketplace-info {
+    margin-bottom: 60px;
+}
+
+.info-box {
+    padding: 30px;
+    background-color: var(--color-light);
+    border: 3px solid var(--color-dark);
+}
+
+.info-box h3 {
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 1.6rem;
+}
+
+.info-steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.info-step {
+    text-align: center;
+    position: relative;
+}
+
+.step-number {
+    width: 40px;
+    height: 40px;
+    background-color: var(--color-primary);
+    color: var(--color-white);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 1.2rem;
+    margin: 0 auto 15px;
+    border: 2px solid var(--color-dark);
+}
+
+.info-step h4 {
+    margin-bottom: 10px;
+}
+
+.info-cta {
+    text-align: center;
+    margin-top: 20px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .marketplace-banner h1 {
+        font-size: 2.2rem;
+    }
+
+    .filters-row {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .filter-group {
+        width: 100%;
+    }
+
+    .listing-actions {
+        flex-direction: column;
+    }
+
+    .listing-card {
+        flex-direction: column;
+    }
+
+    .listing-image {
+        flex: 0 0 auto;
+        height: 200px;
+    }
+}
