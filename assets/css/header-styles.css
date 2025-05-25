@@ -4,78 +4,364 @@
  * Version: 1.0.0
  */
 
-/* ======= Announcement Bar ======= */
+/* ======= Improved Announcement Bar ======= */
 .announcement-bar {
     background-color: var(--color-primary);
     color: var(--color-white);
     padding: 8px 0;
     font-size: 0.9rem;
+    font-weight: 700;
+    position: relative;
+    overflow: hidden;
+    border-bottom: 3px solid var(--color-dark);
+    z-index: 101;
+}
+
+/* Optional animated background pattern */
+.announcement-bar::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(45deg,
+            transparent,
+            transparent 10px,
+            rgba(0, 0, 0, 0.1) 10px,
+            rgba(0, 0, 0, 0.1) 20px);
+    opacity: 0.3;
+    z-index: 0;
 }
 
 .announcement-bar .container {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    position: relative;
+    z-index: 1;
 }
 
+/* Content area with better spacing */
 .announcement-content {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: var(--space-md);
+    flex: 1;
+    justify-content: center;
+}
+
+.announcement-content p {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 900;
+    color: var(--color-white);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+    justify-content: center;
 }
 
 .announcement-link {
-    color: var(--color-white);
-    text-decoration: underline;
-    font-weight: 600;
+    color: var(--color-white) !important;
+    font-weight: 900;
+    text-decoration: none;
+    background-color: var(--color-dark);
+    padding: 4px 12px;
+    border: 2px solid var(--color-white);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all var(--transition-fast);
     white-space: nowrap;
+    display: inline-block;
+    transform: rotate(-1deg);
 }
 
 .announcement-link:hover {
-    text-decoration: none;
+    background-color: var(--color-white) !important;
+    color: var(--color-primary) !important;
+    transform: rotate(0deg) translate(-2px, -2px);
+    box-shadow: 2px 2px 0 var(--color-dark);
 }
 
+/* Extras section with better organization */
 .announcement-extras {
-    display: none;
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    flex-shrink: 0;
 }
 
-@media (min-width: 768px) {
-    .announcement-extras {
-        display: flex;
-        gap: 15px;
-    }
-}
-
+/* Currency and Language Selectors */
 .currency-selector,
 .language-selector {
     position: relative;
+    display: flex;
+    align-items: center;
 }
 
 .currency-selector select,
 .language-selector select {
     appearance: none;
-    background: transparent;
-    border: none;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
     color: var(--color-white);
-    padding: 2px 15px 2px 5px;
-    font-size: 0.9rem;
+    padding: 4px 20px 4px 8px;
+    font-size: 0.85rem;
+    font-weight: bold;
     cursor: pointer;
+    border-radius: 3px;
+    min-width: 50px;
+    transition: all var(--transition-fast);
+    font-family: var(--font-body);
 }
 
 .currency-selector select:focus,
 .language-selector select:focus {
     outline: none;
+    background: rgba(255, 255, 255, 0.3);
+    border-color: var(--color-white);
 }
 
+.currency-selector select:hover,
+.language-selector select:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+/* Custom dropdown arrows */
 .currency-selector::after,
 .language-selector::after {
     content: "▼";
     position: absolute;
-    right: 0;
+    right: 6px;
     top: 50%;
     transform: translateY(-50%);
-    font-size: 8px;
+    font-size: 0.7rem;
+    color: var(--color-white);
     pointer-events: none;
+    opacity: 0.8;
+}
+
+/* Close button for dismissible announcements */
+.announcement-close {
+    background: none;
+    border: none;
+    color: var(--color-white);
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 4px 8px;
+    margin-left: var(--space-sm);
+    border-radius: 3px;
+    transition: all var(--transition-fast);
+    font-weight: bold;
+    line-height: 1;
+}
+
+.announcement-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+/* Alternative announcement styles */
+.announcement-bar.sale {
+    background-color: #FF0000;
+    animation: pulse 2s infinite;
+}
+
+.announcement-bar.info {
+    background-color: #0078ff;
+}
+
+.announcement-bar.success {
+    background-color: #00FF66;
+    color: var(--color-dark);
+}
+
+.announcement-bar.success .announcement-content p,
+.announcement-bar.success .announcement-link {
+    color: var(--color-dark);
+}
+
+.announcement-bar.success .announcement-link {
+    background-color: var(--color-white);
+    border-color: var(--color-dark);
+}
+
+.announcement-bar.success .announcement-link:hover {
+    background-color: var(--color-dark);
+    color: var(--color-white) !important;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.8;
+    }
+}
+
+/* Centered layout variant */
+.announcement-bar.centered .container {
+    justify-content: center;
+}
+
+.announcement-bar.centered .announcement-extras {
+    position: absolute;
+    right: var(--space-md);
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+/* Scrolling text animation for long announcements */
+@keyframes scroll-text {
+    0% {
+        transform: translateX(100%);
+    }
+
+    100% {
+        transform: translateX(-100%);
+    }
+}
+
+.announcement-bar.scrolling .announcement-content {
+    overflow: hidden;
+}
+
+.announcement-bar.scrolling .announcement-content p {
+    animation: scroll-text 15s linear infinite;
+    white-space: nowrap;
+    justify-content: flex-start;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .announcement-extras {
+        gap: var(--space-sm);
+    }
+
+    .currency-selector select,
+    .language-selector select {
+        font-size: 0.8rem;
+        padding: 3px 16px 3px 6px;
+    }
+}
+
+@media (max-width: 992px) {
+    .announcement-extras {
+        display: none;
+    }
+
+    .announcement-content {
+        justify-content: center;
+    }
+
+    .announcement-bar .container {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 768px) {
+    .announcement-bar {
+        padding: 6px 0;
+        font-size: 0.85rem;
+    }
+
+    .announcement-content {
+        flex-direction: column;
+        gap: var(--space-xs);
+        text-align: center;
+    }
+
+    .announcement-content p {
+        font-size: 0.9rem;
+        flex-direction: column;
+        gap: var(--space-xs);
+    }
+
+    .announcement-link {
+        font-size: 0.8rem;
+        padding: 3px 8px;
+        transform: rotate(0deg);
+    }
+
+    .announcement-link:hover {
+        transform: translate(-1px, -1px);
+        box-shadow: 1px 1px 0 var(--color-dark);
+    }
+}
+
+@media (max-width: 480px) {
+    .announcement-bar .container {
+        padding: 0 0.5rem;
+    }
+
+    .announcement-content p {
+        font-size: 0.8rem;
+        line-height: 1.3;
+    }
+
+    .announcement-link {
+        font-size: 0.75rem;
+        padding: 2px 6px;
+        margin-top: var(--space-xs);
+    }
+
+    .announcement-bar {
+        padding: 8px 0;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .announcement-bar {
+        border-bottom: 5px solid var(--color-dark);
+    }
+
+    .announcement-link {
+        border-width: 3px;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .announcement-bar.scrolling .announcement-content p {
+        animation: none;
+    }
+
+    .announcement-bar.sale {
+        animation: none;
+    }
+
+    .announcement-link,
+    .announcement-close,
+    .currency-selector select,
+    .language-selector select {
+        transition: none;
+    }
+}
+
+/* Focus styles for accessibility */
+.announcement-link:focus,
+.announcement-close:focus,
+.currency-selector select:focus,
+.language-selector select:focus {
+    outline: 2px solid var(--color-white);
+    outline-offset: 2px;
+}
+
+/* Print styles */
+@media print {
+    .announcement-bar {
+        display: none;
+    }
 }
 
 /* ======= Main Header ======= */

@@ -204,8 +204,27 @@ function watchmodmarket_scripts() {
             array(
                 'ajax_url'        => admin_url('admin-ajax.php'),
                 'nonce'           => wp_create_nonce('watchmodmarket_ajax'),
+                'builder_nonce'   => wp_create_nonce('watch_builder_nonce'),
+                'isLoggedIn'      => is_user_logged_in(),
+                'loginUrl'        => wp_login_url(get_permalink()),
+                'currencySymbol'  => function_exists('get_woocommerce_currency_symbol') ? get_woocommerce_currency_symbol() : '$',
+                'themeUrl'        => get_template_directory_uri(),
+                'cartUrl'         => function_exists('wc_get_cart_url') ? wc_get_cart_url() : '/cart/',
                 'adding_to_cart'  => __('Adding...', 'watchmodmarket'),
-                'added_to_cart'   => __('Added!', 'watchmodmarket')
+                'added_to_cart'   => __('Added!', 'watchmodmarket'),
+                'i18n'            => array(
+                    'incompatibleMovement' => __('The selected movement is not compatible with this case.', 'watchmodmarket'),
+                    'dialTooBig'          => __('The selected dial is too large for this case.', 'watchmodmarket'),
+                    'incompatibleHands'   => __('The selected hands are not compatible with this movement.', 'watchmodmarket'),
+                    'loginRequired'       => __('You must be logged in to save builds.', 'watchmodmarket'),
+                    'selectSomeParts'     => __('Please select at least one part to save a build.', 'watchmodmarket'),
+                    'buildSaved'          => __('Your build has been saved successfully!', 'watchmodmarket'),
+                    'saveFailed'          => __('Failed to save your build. Please try again.', 'watchmodmarket'),
+                    'selectAllParts'      => __('Please select all required parts', 'watchmodmarket'),
+                    'confirmIncompatible' => __('There are compatibility warnings. Continue anyway?', 'watchmodmarket'),
+                    'addingToCart'        => __('Adding to cart...', 'watchmodmarket'),
+                    'addedToCart'         => __('Added to cart!', 'watchmodmarket'),
+                )
             )
         );
     }
@@ -249,8 +268,9 @@ function watchmodmarket_scripts() {
                     'nonce'           => wp_create_nonce('watch_builder_nonce'),
                     'isLoggedIn'      => is_user_logged_in(),
                     'loginUrl'        => wp_login_url(get_permalink()),
-                    'currencySymbol'  => get_woocommerce_currency_symbol(),
+                    'currencySymbol'  => function_exists('get_woocommerce_currency_symbol') ? get_woocommerce_currency_symbol() : '$',
                     'themeUrl'        => get_template_directory_uri(),
+                    'cartUrl'         => function_exists('wc_get_cart_url') ? wc_get_cart_url() : '/cart/',
                     'i18n'            => array(
                         'incompatibleMovement' => __('The selected movement is not compatible with this case.', 'watchmodmarket'),
                         'dialTooBig'          => __('The selected dial is too large for this case.', 'watchmodmarket'),
@@ -266,7 +286,9 @@ function watchmodmarket_scripts() {
                         'buildSaved'         => __('Your build has been saved successfully!', 'watchmodmarket'),
                         'saveFailed'         => __('Failed to save your build. Please try again.', 'watchmodmarket'),
                         'selectAllParts'     => __('Please select all required parts', 'watchmodmarket'),
-                        'confirmIncompatible' => __('There are compatibility warnings. Do you still want to add this build to cart?', 'watchmodmarket')
+                        'confirmIncompatible' => __('There are compatibility warnings. Do you still want to add this build to cart?', 'watchmodmarket'),
+                        'addingToCart'        => __('Adding to cart...', 'watchmodmarket'),
+                        'addedToCart'         => __('Added to cart!', 'watchmodmarket'),
                     )
                 )
             );
@@ -425,6 +447,85 @@ function watchmodmarket_widgets_init() {
 add_action('widgets_init', 'watchmodmarket_widgets_init');
 
 /**
+ * AJAX handler for adding watch build to cart
+ */
+function watchmodmarket_add_build_to_cart() {
+    // Check nonce for security
+    if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'watchmodmarket_ajax')) {
+        wp_send_json_error(array('message' => __('Security check failed', 'watchmodmarket')));
+        wp_die();
+    }
+    
+    // Check if WooCommerce is active
+    if (!class_exists('WooCommerce')) {
+        wp_send_json_error(array('message' => __('WooCommerce is not active', 'watchmodmarket')));
+        wp_die();
+    }
+    
+    // Get form data
+    $selected_parts = isset($_POST['selected_parts']) ? $_POST['selected_parts'] : array();
+    $total_price = isset($_POST['total_price']) ? floatval($_POST['total_price']) : 0;
+    $build_data = isset($_POST['build_data']) ? $_POST['build_data'] : array();
+    
+    // Validate data
+    if (empty($selected_parts)) {
+        wp_send_json_error(array('message' => __('No parts selected', 'watchmodmarket')));
+        wp_die();
+    }
+    
+    try {
+        $added_products = array();
+        
+        // Add each selected part to cart
+        foreach ($selected_parts as $part_type => $product_id) {
+            if (!empty($product_id)) {
+                $product_id = intval($product_id);
+                $product = wc_get_product($product_id);
+                
+                if ($product && $product->is_purchasable()) {
+                    $cart_item_data = array(
+                        'watch_build_part_type' => $part_type,
+                        'watch_build_data' => $build_data,
+                        'is_watch_build_item' => true
+                    );
+                    
+                    $cart_item_key = WC()->cart->add_to_cart($product_id, 1, 0, array(), $cart_item_data);
+                    
+                    if ($cart_item_key) {
+                        $added_products[] = array(
+                            'id' => $product_id,
+                            'name' => $product->get_name(),
+                            'type' => $part_type
+                        );
+                    }
+                }
+            }
+        }
+        
+        if (empty($added_products)) {
+            wp_send_json_error(array('message' => __('No products could be added to cart', 'watchmodmarket')));
+            wp_die();
+        }
+        
+        // Calculate cart totals
+        WC()->cart->calculate_totals();
+        
+        wp_send_json_success(array(
+            'message' => sprintf(__('%d parts added to cart successfully!', 'watchmodmarket'), count($added_products)),
+            'added_products' => $added_products,
+            'cart_url' => wc_get_cart_url(),
+            'cart_count' => WC()->cart->get_cart_contents_count(),
+            'cart_total' => WC()->cart->get_cart_total()
+        ));
+        
+    } catch (Exception $e) {
+        wp_send_json_error(array('message' => __('Failed to add items to cart: ', 'watchmodmarket') . $e->getMessage()));
+    }
+}
+add_action('wp_ajax_add_build_to_cart', 'watchmodmarket_add_build_to_cart');
+add_action('wp_ajax_nopriv_add_build_to_cart', 'watchmodmarket_add_build_to_cart');
+
+/**
  * AJAX handler for saving watch builds
  */
 function watchmodmarket_save_watch_build() {
@@ -441,10 +542,11 @@ function watchmodmarket_save_watch_build() {
     }
     
     // Get form data
-    $build_name = sanitize_text_field($_POST['build_name'] ?? '');
-    $build_description = sanitize_textarea_field($_POST['build_description'] ?? '');
-    $is_public = isset($_POST['build_public']) ? 1 : 0;
-    $selected_parts = $_POST['selected_parts'] ?? array();
+    $build_name = isset($_POST['build_name']) ? sanitize_text_field($_POST['build_name']) : '';
+    $build_description = isset($_POST['build_description']) ? sanitize_textarea_field($_POST['build_description']) : '';
+    $is_public = isset($_POST['build_public']) ? intval($_POST['build_public']) : 0;
+    $selected_parts = isset($_POST['selected_parts']) ? $_POST['selected_parts'] : array();
+    $total_price = isset($_POST['total_price']) ? floatval($_POST['total_price']) : 0;
     
     // Validate data
     if (empty($build_name)) {
@@ -452,36 +554,44 @@ function watchmodmarket_save_watch_build() {
         wp_die();
     }
     
-    if (empty($selected_parts) || !is_array($selected_parts)) {
+    if (empty($selected_parts)) {
         wp_send_json_error(array('message' => __('No parts selected', 'watchmodmarket')));
         wp_die();
     }
     
-    // Create the build post
-    $post_data = array(
-        'post_title'   => $build_name,
-        'post_content' => $build_description,
-        'post_status'  => $is_public ? 'publish' : 'private',
-        'post_type'    => 'watch_build',
-        'post_author'  => get_current_user_id(),
-    );
-    
-    $build_id = wp_insert_post($post_data);
-    
-    if (is_wp_error($build_id)) {
-        wp_send_json_error(array('message' => __('Failed to save build', 'watchmodmarket')));
-        wp_die();
+    try {
+        // Create the build post
+        $post_data = array(
+            'post_title'   => $build_name,
+            'post_content' => $build_description,
+            'post_status'  => $is_public ? 'publish' : 'private',
+            'post_type'    => 'watch_build',
+            'post_author'  => get_current_user_id(),
+        );
+        
+        $build_id = wp_insert_post($post_data);
+        
+        if (is_wp_error($build_id)) {
+            throw new Exception('Failed to create build post');
+        }
+        
+        // Save meta data
+        update_post_meta($build_id, '_selected_parts', $selected_parts);
+        update_post_meta($build_id, '_build_visibility', $is_public ? 'public' : 'private');
+        update_post_meta($build_id, '_build_total_price', $total_price);
+        update_post_meta($build_id, '_build_created_date', current_time('mysql'));
+        
+        wp_send_json_success(array(
+            'message' => __('Build saved successfully!', 'watchmodmarket'),
+            'build_id' => $build_id,
+            'build_url' => get_permalink($build_id),
+            'edit_url' => get_edit_post_link($build_id, 'raw')
+        ));
+        
+    } catch (Exception $e) {
+        error_log('Watch build save error: ' . $e->getMessage());
+        wp_send_json_error(array('message' => __('Failed to save build. Please try again.', 'watchmodmarket')));
     }
-    
-    // Save the selected parts as post meta
-    update_post_meta($build_id, '_selected_parts', $selected_parts);
-    update_post_meta($build_id, '_build_visibility', $is_public ? 'public' : 'private');
-    
-    wp_send_json_success(array(
-        'message' => __('Build saved successfully!', 'watchmodmarket'),
-        'build_id' => $build_id,
-        'build_url' => get_permalink($build_id)
-    ));
 }
 add_action('wp_ajax_save_watch_build', 'watchmodmarket_save_watch_build');
 
@@ -549,6 +659,186 @@ function watchmodmarket_quick_view_ajax() {
 }
 add_action('wp_ajax_watchmodmarket_quick_view', 'watchmodmarket_quick_view_ajax');
 add_action('wp_ajax_nopriv_watchmodmarket_quick_view', 'watchmodmarket_quick_view_ajax');
+
+/**
+ * Display custom cart item data for watch build items
+ */
+function watchmodmarket_display_cart_item_custom_data($item_data, $cart_item) {
+    if (isset($cart_item['watch_build_part_type'])) {
+        $item_data[] = array(
+            'key'     => __('Part Type', 'watchmodmarket'),
+            'value'   => ucfirst($cart_item['watch_build_part_type']),
+            'display' => '',
+        );
+    }
+    
+    if (isset($cart_item['is_watch_build_item']) && $cart_item['is_watch_build_item']) {
+        $item_data[] = array(
+            'key'     => __('From', 'watchmodmarket'),
+            'value'   => __('Watch Builder', 'watchmodmarket'),
+            'display' => '',
+        );
+    }
+    
+    return $item_data;
+}
+add_filter('woocommerce_get_item_data', 'watchmodmarket_display_cart_item_custom_data', 10, 2);
+
+/**
+ * Save custom cart item data to order items
+ */
+function watchmodmarket_save_cart_item_custom_data($item, $cart_item_key, $values, $order) {
+    if (isset($values['watch_build_part_type'])) {
+        $item->add_meta_data('_watch_build_part_type', $values['watch_build_part_type']);
+    }
+    
+    if (isset($values['watch_build_data'])) {
+        $item->add_meta_data('_watch_build_data', $values['watch_build_data']);
+    }
+    
+    if (isset($values['is_watch_build_item'])) {
+        $item->add_meta_data('_is_watch_build_item', $values['is_watch_build_item']);
+    }
+}
+add_action('woocommerce_checkout_create_order_line_item', 'watchmodmarket_save_cart_item_custom_data', 10, 4);
+
+/**
+ * Display custom order item meta in admin
+ */
+function watchmodmarket_display_order_item_meta($item_id, $item, $order) {
+    $part_type = $item->get_meta('_watch_build_part_type');
+    $is_build_item = $item->get_meta('_is_watch_build_item');
+    
+    if ($part_type) {
+        echo '<p><strong>' . __('Part Type:', 'watchmodmarket') . '</strong> ' . ucfirst($part_type) . '</p>';
+    }
+    
+    if ($is_build_item) {
+        echo '<p><strong>' . __('Source:', 'watchmodmarket') . '</strong> ' . __('Watch Builder', 'watchmodmarket') . '</p>';
+    }
+}
+add_action('woocommerce_after_order_item_name', 'watchmodmarket_display_order_item_meta', 10, 3);
+
+/**
+ * Add custom post type for watch builds if it doesn't exist
+ */
+function watchmodmarket_register_watch_build_post_type() {
+    if (post_type_exists('watch_build')) {
+        return;
+    }
+    
+    $labels = array(
+        'name'                  => _x('Watch Builds', 'Post type general name', 'watchmodmarket'),
+        'singular_name'         => _x('Watch Build', 'Post type singular name', 'watchmodmarket'),
+        'menu_name'             => _x('Watch Builds', 'Admin Menu text', 'watchmodmarket'),
+        'name_admin_bar'        => _x('Watch Build', 'Add New on Toolbar', 'watchmodmarket'),
+        'add_new'               => __('Add New', 'watchmodmarket'),
+        'add_new_item'          => __('Add New Watch Build', 'watchmodmarket'),
+        'new_item'              => __('New Watch Build', 'watchmodmarket'),
+        'edit_item'             => __('Edit Watch Build', 'watchmodmarket'),
+        'view_item'             => __('View Watch Build', 'watchmodmarket'),
+        'all_items'             => __('All Watch Builds', 'watchmodmarket'),
+        'search_items'          => __('Search Watch Builds', 'watchmodmarket'),
+        'parent_item_colon'     => __('Parent Watch Builds:', 'watchmodmarket'),
+        'not_found'             => __('No watch builds found.', 'watchmodmarket'),
+        'not_found_in_trash'    => __('No watch builds found in Trash.', 'watchmodmarket'),
+        'featured_image'        => _x('Watch Build Image', 'Overrides the "Featured Image" phrase', 'watchmodmarket'),
+        'set_featured_image'    => _x('Set watch build image', 'Overrides the "Set featured image" phrase', 'watchmodmarket'),
+        'remove_featured_image' => _x('Remove watch build image', 'Overrides the "Remove featured image" phrase', 'watchmodmarket'),
+        'use_featured_image'    => _x('Use as watch build image', 'Overrides the "Use as featured image" phrase', 'watchmodmarket'),
+        'archives'              => _x('Watch Build archives', 'The post type archive label', 'watchmodmarket'),
+        'insert_into_item'      => _x('Insert into watch build', 'Overrides the "Insert into post" phrase', 'watchmodmarket'),
+        'uploaded_to_this_item' => _x('Uploaded to this watch build', 'Overrides the "Uploaded to this post" phrase', 'watchmodmarket'),
+        'filter_items_list'     => _x('Filter watch builds list', 'Screen reader text for the filter links', 'watchmodmarket'),
+        'items_list_navigation' => _x('Watch builds list navigation', 'Screen reader text for the pagination', 'watchmodmarket'),
+        'items_list'            => _x('Watch builds list', 'Screen reader text for the items list', 'watchmodmarket'),
+    );
+
+    $args = array(
+        'labels'             => $labels,
+        'public'             => true,
+        'publicly_queryable' => true,
+        'show_ui'            => true,
+        'show_in_menu'       => true,
+        'query_var'          => true,
+        'rewrite'            => array('slug' => 'watch-builds'),
+        'capability_type'    => 'post',
+        'has_archive'        => true,
+        'hierarchical'       => false,
+        'menu_position'      => null,
+        'menu_icon'          => 'dashicons-admin-customizer',
+        'supports'           => array('title', 'editor', 'author', 'thumbnail', 'excerpt', 'comments'),
+        'show_in_rest'       => true,
+    );
+
+    register_post_type('watch_build', $args);
+}
+add_action('init', 'watchmodmarket_register_watch_build_post_type');
+
+/**
+ * Add admin column for watch builds
+ */
+function watchmodmarket_add_watch_build_columns($columns) {
+    $new_columns = array();
+    
+    foreach ($columns as $key => $value) {
+        $new_columns[$key] = $value;
+        
+        if ($key === 'title') {
+            $new_columns['build_parts'] = __('Parts', 'watchmodmarket');
+            $new_columns['build_price'] = __('Total Price', 'watchmodmarket');
+            $new_columns['build_visibility'] = __('Visibility', 'watchmodmarket');
+        }
+    }
+    
+    return $new_columns;
+}
+add_filter('manage_watch_build_posts_columns', 'watchmodmarket_add_watch_build_columns');
+
+/**
+ * Populate custom columns for watch builds
+ */
+function watchmodmarket_populate_watch_build_columns($column, $post_id) {
+    switch ($column) {
+        case 'build_parts':
+            $selected_parts = get_post_meta($post_id, '_selected_parts', true);
+            if (is_array($selected_parts)) {
+                $part_count = count(array_filter($selected_parts));
+                if ($part_count == 1) {
+                echo '1 ' . __('part', 'watchmodmarket');
+                    } else {
+                    echo $part_count . ' ' . __('parts', 'watchmodmarket');
+                    }   
+            } else {
+                echo __('No parts', 'watchmodmarket');
+            }
+            break;
+            
+        case 'build_price':
+            $total_price = get_post_meta($post_id, '_build_total_price', true);
+            if ($total_price) {
+                $currency_symbol = function_exists('get_woocommerce_currency_symbol') ? get_woocommerce_currency_symbol() : '$';
+                echo $currency_symbol . number_format($total_price, 2);
+            } else {
+                echo __('N/A', 'watchmodmarket');
+            }
+            break;
+            
+        case 'build_visibility':
+            $visibility = get_post_meta($post_id, '_build_visibility', true);
+            $status = get_post_status($post_id);
+            
+            if ($status === 'private') {
+                echo '<span style="color: #999;">' . __('Private', 'watchmodmarket') . '</span>';
+            } elseif ($status === 'publish') {
+                echo '<span style="color: #46b450;">' . __('Public', 'watchmodmarket') . '</span>';
+            } else {
+                echo '<span style="color: #ffb900;">' . ucfirst($status) . '</span>';
+            }
+            break;
+    }
+}
+add_action('manage_watch_build_posts_custom_column', 'watchmodmarket_populate_watch_build_columns', 10, 2);
 
 /**
  * Implement custom logo with fallback

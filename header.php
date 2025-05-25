@@ -25,43 +25,53 @@
 
 <a class="skip-link screen-reader-text" href="#primary"><?php esc_html_e('Skip to content', 'watchmodmarket'); ?></a>
 
-<!-- Announcement Bar -->
+<!-- Improved Announcement Bar -->
 <?php if (get_theme_mod('show_announcement_bar', true)) : ?>
-<div class="announcement-bar">
+<div class="announcement-bar <?php echo esc_attr(get_theme_mod('announcement_style', 'default')); ?>">
     <div class="container">
         <div class="announcement-content">
-            <?php echo esc_html(get_theme_mod('announcement_text', __('Free shipping on orders over $100 | 30-day returns', 'watchmodmarket'))); ?>
-            <?php if (get_theme_mod('announcement_link')) : ?>
-                <a href="<?php echo esc_url(get_theme_mod('announcement_link')); ?>" class="announcement-link">
-                    <?php echo esc_html(get_theme_mod('announcement_link_text', __('Learn More', 'watchmodmarket'))); ?>
-                </a>
-            <?php endif; ?>
+            <p>
+                <?php 
+                $announcement_text = get_theme_mod('announcement_text', __('🎉 Free shipping on orders over $100 | 30-day returns', 'watchmodmarket'));
+                echo esc_html($announcement_text);
+                ?>
+                <?php if (get_theme_mod('announcement_link')) : ?>
+                    <a href="<?php echo esc_url(get_theme_mod('announcement_link')); ?>" class="announcement-link">
+                        <?php echo esc_html(get_theme_mod('announcement_link_text', __('Shop Now!', 'watchmodmarket'))); ?>
+                    </a>
+                <?php endif; ?>
+            </p>
         </div>
-        <?php if (get_theme_mod('show_currency_selector', true) || get_theme_mod('show_language_selector', true)) : ?>
+        
+        <?php if (get_theme_mod('show_announcement_extras', true)) : ?>
         <div class="announcement-extras">
             <?php if (get_theme_mod('show_currency_selector', true)) : ?>
             <div class="currency-selector">
-                <select id="currency-selector">
-                    <option value="USD">USD</option>
-                    <option value="EUR">EUR</option>
-                    <option value="GBP">GBP</option>
-                    <option value="CAD">CAD</option>
-                    <option value="AUD">AUD</option>
+                <select id="currency-selector" aria-label="<?php esc_attr_e('Select Currency', 'watchmodmarket'); ?>">
+                    <option value="USD" <?php selected(get_theme_mod('default_currency', 'USD'), 'USD'); ?>>USD</option>
+                    <option value="EUR" <?php selected(get_theme_mod('default_currency', 'USD'), 'EUR'); ?>>EUR</option>
+                    <option value="GBP" <?php selected(get_theme_mod('default_currency', 'USD'), 'GBP'); ?>>GBP</option>
+                    <option value="CAD" <?php selected(get_theme_mod('default_currency', 'USD'), 'CAD'); ?>>CAD</option>
+                    <option value="AUD" <?php selected(get_theme_mod('default_currency', 'USD'), 'AUD'); ?>>AUD</option>
                 </select>
             </div>
             <?php endif; ?>
             
             <?php if (get_theme_mod('show_language_selector', true)) : ?>
             <div class="language-selector">
-                <select id="language-selector">
-                    <option value="en">EN</option>
-                    <option value="fr">FR</option>
-                    <option value="de">DE</option>
-                    <option value="es">ES</option>
-                    <option value="it">IT</option>
-                    <option value="pt">PT</option>
+                <select id="language-selector" aria-label="<?php esc_attr_e('Select Language', 'watchmodmarket'); ?>">
+                    <option value="en" <?php selected(get_locale(), 'en'); ?>>EN</option>
+                    <option value="fr" <?php selected(get_locale(), 'fr'); ?>>FR</option>
+                    <option value="de" <?php selected(get_locale(), 'de'); ?>>DE</option>
+                    <option value="es" <?php selected(get_locale(), 'es'); ?>>ES</option>
+                    <option value="it" <?php selected(get_locale(), 'it'); ?>>IT</option>
+                    <option value="pt" <?php selected(get_locale(), 'pt'); ?>>PT</option>
                 </select>
             </div>
+            <?php endif; ?>
+            
+            <?php if (get_theme_mod('announcement_dismissible', false)) : ?>
+            <button class="announcement-close" aria-label="<?php esc_attr_e('Close announcement', 'watchmodmarket'); ?>">×</button>
             <?php endif; ?>
         </div>
         <?php endif; ?>
@@ -153,7 +163,7 @@
         </div><!-- .header-wrapper -->
     </div><!-- .container -->
 </header><!-- #masthead -->
-</html> 
+
 <!-- WooCommerce Notices -->
 <?php if (function_exists('woocommerce_output_all_notices')) : ?>
     <div class="wc-notices-wrapper">
@@ -161,4 +171,60 @@
     </div>
 <?php endif; ?>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle announcement bar interactions
+    const announcementBar = document.querySelector('.announcement-bar');
+    
+    if (announcementBar) {
+        // Handle close button
+        const closeButton = announcementBar.querySelector('.announcement-close');
+        if (closeButton) {
+            closeButton.addEventListener('click', function() {
+                announcementBar.style.transform = 'translateY(-100%)';
+                announcementBar.style.transition = 'transform 0.3s ease';
+                setTimeout(() => {
+                    announcementBar.style.display = 'none';
+                    // Store dismissal in localStorage
+                    localStorage.setItem('announcement_dismissed', 'true');
+                }, 300);
+            });
+        }
 
+        // Check if announcement was previously dismissed
+        if (localStorage.getItem('announcement_dismissed') === 'true') {
+            announcementBar.style.display = 'none';
+        }
+
+        // Handle currency selector
+        const currencySelector = document.getElementById('currency-selector');
+        if (currencySelector) {
+            currencySelector.addEventListener('change', function() {
+                // Add your currency change logic here
+                console.log('Currency changed to:', this.value);
+                
+                // Example: Send AJAX request to update currency
+                if (typeof jQuery !== 'undefined') {
+                    jQuery.post(watchmodmarket_ajax.ajax_url, {
+                        action: 'update_currency',
+                        currency: this.value,
+                        nonce: watchmodmarket_ajax.nonce
+                    });
+                }
+            });
+        }
+
+        // Handle language selector
+        const languageSelector = document.getElementById('language-selector');
+        if (languageSelector) {
+            languageSelector.addEventListener('change', function() {
+                // Add your language change logic here
+                console.log('Language changed to:', this.value);
+                
+                // Example: Redirect to language-specific URL
+                // window.location.href = window.location.href + '?lang=' + this.value;
+            });
+        }
+    }
+});
+</script>

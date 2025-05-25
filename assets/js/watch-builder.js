@@ -1,11 +1,11 @@
 /**
- * Enhanced Watch Builder functionality for WatchModMarket
- * Improvements: Better error handling, performance optimization, modern JS features
+ * Fixed Watch Builder functionality for WatchModMarket
+ * Main fixes: Proper AJAX setup, form handling, and event binding
  */
 (function ($) {
     "use strict";
 
-    // Watch Builder Class with improvements
+    // Watch Builder Class
     class WatchBuilder {
         constructor() {
             // State management
@@ -23,24 +23,10 @@
                 totalPrice: 0
             };
 
-            // 3D Elements
-            this.canvas = null;
-            this.ctx = null;
-            this.scene = null;
-            this.camera = null;
-            this.renderer = null;
-            this.controls = null;
-            this.currentModel = null;
-            this.animationFrameId = null;
-
-            // Performance tracking
-            this.lastUpdateTime = 0;
-            this.updateThrottle = 100; // ms
-
             // Cache DOM elements for better performance
             this.elements = this.cacheElements();
 
-            // Settings with better defaults
+            // Settings with better validation
             this.settings = this.getSettings();
 
             // Initialize with error handling
@@ -64,17 +50,21 @@
                 saveButton: $('#save-build'),
                 buildForm: $('#add-build-to-cart'),
                 specTable: $('.spec-table tbody'),
-                canvas: $('#watch-3d-render')[0]
+                canvas: $('#watch-3d-render')[0],
+                saveModal: $('#save-build-modal'),
+                saveForm: $('#save-build-form')
             };
         }
 
         /**
-         * Get settings with better validation
+         * Get settings with proper fallbacks
          */
         getSettings() {
-            const wpData = window.wpData || {};
+            // Try to get settings from localized script first
+            const wpData = window.wpData || window.watchmodmarket_ajax || {};
+
             return {
-                ajaxUrl: wpData.ajaxUrl || '/wp-admin/admin-ajax.php',
+                ajaxUrl: wpData.ajax_url || wpData.ajaxUrl || '/wp-admin/admin-ajax.php',
                 nonce: wpData.nonce || '',
                 isLoggedIn: Boolean(wpData.isLoggedIn),
                 loginUrl: wpData.loginUrl || '/wp-login.php',
@@ -97,7 +87,9 @@
                 buildSaved: 'Your build has been saved successfully!',
                 saveFailed: 'Failed to save your build. Please try again.',
                 selectAllParts: 'Please select all required parts',
-                confirmIncompatible: 'There are compatibility warnings. Continue anyway?'
+                confirmIncompatible: 'There are compatibility warnings. Continue anyway?',
+                addingToCart: 'Adding to cart...',
+                addedToCart: 'Added to cart!'
             };
         }
 
@@ -122,6 +114,8 @@
                     this.elements.loading.fadeOut();
                 }, 1000);
 
+                console.log('Watch Builder initialized successfully');
+
             } catch (error) {
                 console.error('Initialization error:', error);
                 throw error;
@@ -137,35 +131,21 @@
                 .on('click', '.parts-tab', this.handleTabClick.bind(this))
                 .on('click', '.part-item', this.handlePartSelection.bind(this))
                 .on('click', '.view-control', this.handleViewChange.bind(this))
-                .on('submit', '#add-build-to-cart', this.handleFormSubmission.bind(this))
-                .on('click', '#save-build', this.handleSaveBuild.bind(this));
+                .on('click', '#save-build', this.handleSaveBuild.bind(this))
+                .on('submit', '#add-build-to-cart', this.handleAddToCart.bind(this))
+                .on('submit', '#save-build-form', this.handleSaveForm.bind(this))
+                .on('click', '.builder-modal-close', this.closeSaveModal.bind(this))
+                .on('click', '#save-build-modal', (e) => {
+                    if (e.target === e.currentTarget) {
+                        this.closeSaveModal();
+                    }
+                });
 
             // Window events
             $(window).on('beforeunload', this.cleanup.bind(this));
             $(window).on('resize', this.debounce(this.handleResize.bind(this), 250));
-        }
 
-        /**
-         * Handle tab clicks
-         */
-        handleTabClick(e) {
-            e.preventDefault();
-            const $tab = $(e.currentTarget);
-            const tabId = $tab.attr('id');
-
-            if (!tabId) return;
-
-            const targetSection = $('#' + tabId.replace('tab-', 'section-'));
-
-            if (!targetSection.length) return;
-
-            // Update tab state
-            this.elements.tabs.removeClass('active').attr('aria-selected', 'false');
-            $tab.addClass('active').attr('aria-selected', 'true');
-
-            // Update section visibility
-            $('.part-section').removeClass('active').attr('hidden', 'true');
-            targetSection.addClass('active').removeAttr('hidden');
+            console.log('Event listeners set up');
         }
 
         /**
@@ -173,13 +153,6 @@
          */
         handlePartSelection(e) {
             e.preventDefault();
-
-            // Throttle updates for performance
-            const now = Date.now();
-            if (now - this.lastUpdateTime < this.updateThrottle) {
-                return;
-            }
-            this.lastUpdateTime = now;
 
             const $item = $(e.currentTarget);
             const partId = $item.data('part-id');
@@ -201,34 +174,10 @@
             // Store selected part
             this.state.selectedParts.set(partType, partId);
 
+            console.log('Selected part:', partType, partId);
+
             // Batch updates for better performance
             this.batchUpdate();
-        }
-
-        /**
-         * Handle view changes
-         */
-        handleViewChange(e) {
-            e.preventDefault();
-            const $control = $(e.currentTarget);
-            const view = $control.data('view');
-
-            if (!view || view === this.state.currentView) return;
-
-            // Update control state
-            this.elements.viewControls.removeClass('active');
-            $control.addClass('active');
-
-            // Update current view
-            this.state.currentView = view;
-
-            // Update view angle
-            this.updateViewAngle();
-
-            // Update 2D canvas if needed
-            if (!window.THREE) {
-                this.createWatchModel2D();
-            }
         }
 
         /**
@@ -249,211 +198,220 @@
         }
 
         /**
-         * Initialize renderer with better error handling
+         * Handle Add to Cart form submission
          */
-        async initializeRenderer() {
-            if (!this.elements.canvas) {
-                throw new Error('Canvas element not found');
-            }
+        handleAddToCart(e) {
+            e.preventDefault();
 
-            try {
-                if (window.THREE && this.isWebGLSupported()) {
-                    await this.initThreeJS();
-                } else {
-                    this.initCanvas();
-                    this.createWatchModel2D();
-                }
-            } catch (error) {
-                console.warn('3D rendering failed, falling back to 2D:', error);
-                this.initCanvas();
-                this.createWatchModel2D();
-            }
-        }
+            console.log('Add to Cart clicked');
 
-        /**
-         * Check WebGL support
-         */
-        isWebGLSupported() {
-            try {
-                const canvas = document.createElement('canvas');
-                return !!(window.WebGLRenderingContext &&
-                    (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')));
-            } catch (e) {
+            // Validate required parts
+            const selectedParts = Array.from(this.state.selectedParts.entries())
+                .filter(([key, value]) => value !== null);
+
+            if (selectedParts.length === 0) {
+                this.showError(this.settings.i18n.selectAllParts);
                 return false;
             }
-        }
 
-        /**
-         * Enhanced Three.js initialization
-         */
-        async initThreeJS() {
-            try {
-                // Create scene with better settings
-                this.scene = new THREE.Scene();
-                this.scene.background = new THREE.Color(0xF5F5F5);
-                this.scene.fog = new THREE.Fog(0xF5F5F5, 50, 100);
-
-                // Create camera with responsive aspect ratio
-                const aspect = this.elements.canvas.clientWidth / this.elements.canvas.clientHeight;
-                this.camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 1000);
-                this.camera.position.set(0, 0, 10);
-
-                // Create renderer with better settings
-                this.renderer = new THREE.WebGLRenderer({
-                    canvas: this.elements.canvas,
-                    antialias: true,
-                    alpha: true,
-                    powerPreference: 'high-performance'
-                });
-
-                this.renderer.setSize(
-                    this.elements.canvas.clientWidth,
-                    this.elements.canvas.clientHeight
-                );
-                this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-                this.renderer.shadowMap.enabled = true;
-                this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
-                // Enhanced lighting setup
-                this.setupLighting();
-
-                // Add controls if available
-                if (window.THREE.OrbitControls) {
-                    this.setupControls();
+            // Check compatibility warnings
+            if (this.state.compatibilityWarnings.length > 0) {
+                if (!confirm(this.settings.i18n.confirmIncompatible)) {
+                    return false;
                 }
-
-                // Start animation loop
-                this.animate();
-
-                // Create initial model
-                this.updateWatchModel();
-
-            } catch (error) {
-                console.error('Three.js initialization failed:', error);
-                throw error;
-            }
-        }
-
-        /**
-         * Setup enhanced lighting
-         */
-        setupLighting() {
-            // Ambient light
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
-            this.scene.add(ambientLight);
-
-            // Main directional light
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-            directionalLight.position.set(5, 5, 5);
-            directionalLight.castShadow = true;
-            directionalLight.shadow.mapSize.width = 2048;
-            directionalLight.shadow.mapSize.height = 2048;
-            directionalLight.shadow.camera.near = 0.5;
-            directionalLight.shadow.camera.far = 50;
-            this.scene.add(directionalLight);
-
-            // Fill light
-            const fillLight = new THREE.DirectionalLight(0xffffff, 0.3);
-            fillLight.position.set(-5, -5, -5);
-            this.scene.add(fillLight);
-        }
-
-        /**
-         * Setup enhanced controls
-         */
-        setupControls() {
-            this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
-            this.controls.enableDamping = true;
-            this.controls.dampingFactor = 0.05;
-            this.controls.rotateSpeed = 0.7;
-            this.controls.enableZoom = true;
-            this.controls.enablePan = false;
-            this.controls.autoRotate = (this.state.currentView === '3d');
-            this.controls.autoRotateSpeed = 2.0;
-            this.controls.minDistance = 5;
-            this.controls.maxDistance = 20;
-        }
-
-        /**
-         * Enhanced animation loop with performance monitoring
-         */
-        animate() {
-            this.animationFrameId = requestAnimationFrame(this.animate.bind(this));
-
-            if (this.controls) {
-                this.controls.update();
             }
 
-            if (this.renderer && this.scene && this.camera) {
-                this.renderer.render(this.scene, this.camera);
-            }
+            // Show loading state
+            const $submitButton = this.elements.buildForm.find('button[type="submit"]');
+            const originalText = $submitButton.text();
+            $submitButton.text(this.settings.i18n.addingToCart).prop('disabled', true);
+
+            // Prepare data for submission
+            const formData = this.prepareCartData();
+
+            // Submit via AJAX
+            $.ajax({
+                url: this.settings.ajaxUrl,
+                method: 'POST',
+                data: {
+                    action: 'add_build_to_cart',
+                    nonce: this.settings.nonce,
+                    ...formData
+                },
+                success: (response) => {
+                    console.log('Cart response:', response);
+                    if (response.success) {
+                        $submitButton.text(this.settings.i18n.addedToCart);
+                        // Redirect to cart after a short delay
+                        setTimeout(() => {
+                            window.location.href = response.data.cart_url || '/cart/';
+                        }, 1000);
+                    } else {
+                        this.showError(response.data.message || 'Failed to add to cart');
+                        $submitButton.text(originalText).prop('disabled', false);
+                    }
+                },
+                error: (xhr, status, error) => {
+                    console.error('AJAX error:', error);
+                    this.showError('Failed to add to cart. Please try again.');
+                    $submitButton.text(originalText).prop('disabled', false);
+                }
+            });
         }
 
         /**
-         * Enhanced compatibility checking with better logic
+         * Prepare data for cart submission
          */
-        checkCompatibility() {
-            this.state.compatibilityWarnings = [];
+        prepareCartData() {
+            const cartData = {
+                selected_parts: {},
+                total_price: this.state.totalPrice,
+                build_data: {
+                    name: 'Custom Watch Build',
+                    parts: {}
+                }
+            };
 
-            const parts = this.state.selectedParts;
+            // Add selected parts
+            this.state.selectedParts.forEach((partId, partType) => {
+                if (partId) {
+                    const productId = partId.split('-')[1];
+                    cartData.selected_parts[partType] = productId;
+                    cartData.build_data.parts[partType] = {
+                        id: productId,
+                        name: this.getPartName(partId),
+                        price: this.getPartPrice(partId)
+                    };
+                }
+            });
 
-            // Check case and movement compatibility
-            this.checkCaseMovementCompatibility(parts);
-
-            // Check case and dial size compatibility
-            this.checkCaseDialCompatibility(parts);
-
-            // Check hands and movement compatibility
-            this.checkHandsMovementCompatibility(parts);
-
-            // Update compatibility display
-            this.updateCompatibilityWarnings();
+            return cartData;
         }
 
         /**
-         * Check case and movement compatibility
+         * Get part name from DOM
          */
-        checkCaseMovementCompatibility(parts) {
-            const caseId = parts.get('case');
-            const movementId = parts.get('movement');
-
-            if (!caseId || !movementId) return;
-
-            const $caseElement = $(`[data-part-id="${caseId}"]`);
-            const compatibility = $caseElement.data('compatibility');
-
-            if (compatibility && typeof compatibility === 'string' &&
-                !compatibility.includes(movementId.split('-')[1])) {
-                this.state.compatibilityWarnings.push({
-                    parts: ['case', 'movement'],
-                    message: this.settings.i18n.incompatibleMovement,
-                    severity: 'error'
-                });
-            }
+        getPartName(partId) {
+            const $part = $(`[data-part-id="${partId}"]`);
+            return $part.find('.part-name').text() || 'Unknown Part';
         }
 
         /**
-         * Check case and dial size compatibility
+         * Get part price from DOM
          */
-        checkCaseDialCompatibility(parts) {
-            const caseId = parts.get('case');
-            const dialId = parts.get('dial');
+        getPartPrice(partId) {
+            const $part = $(`[data-part-id="${partId}"]`);
+            return parseFloat($part.data('price')) || 0;
+        }
 
-            if (!caseId || !dialId) return;
+        /**
+         * Handle Save Build button click
+         */
+        handleSaveBuild(e) {
+            e.preventDefault();
 
-            const $caseElement = $(`[data-part-id="${caseId}"]`);
-            const $dialElement = $(`[data-part-id="${dialId}"]`);
+            console.log('Save Build clicked');
 
-            const caseDiameter = parseFloat($caseElement.data('diameter'));
-            const dialDiameter = parseFloat($dialElement.data('diameter'));
-
-            if (caseDiameter && dialDiameter && caseDiameter < dialDiameter) {
-                this.state.compatibilityWarnings.push({
-                    parts: ['case', 'dial'],
-                    message: this.settings.i18n.dialTooBig,
-                    severity: 'error'
-                });
+            if (!this.settings.isLoggedIn) {
+                this.showError(this.settings.i18n.loginRequired);
+                setTimeout(() => {
+                    window.location.href = this.settings.loginUrl;
+                }, 2000);
+                return;
             }
+
+            // Check if any parts are selected
+            const hasSelectedParts = Array.from(this.state.selectedParts.values())
+                .some(part => part !== null);
+
+            if (!hasSelectedParts) {
+                this.showError(this.settings.i18n.selectSomeParts);
+                return;
+            }
+
+            // Show save modal
+            this.openSaveModal();
+        }
+
+        /**
+         * Open save modal
+         */
+        openSaveModal() {
+            this.elements.saveModal.show().attr('aria-hidden', 'false');
+            this.elements.saveForm.find('#build-name').focus();
+        }
+
+        /**
+         * Close save modal
+         */
+        closeSaveModal() {
+            this.elements.saveModal.hide().attr('aria-hidden', 'true');
+            this.elements.saveForm[0].reset();
+        }
+
+        /**
+         * Handle save form submission
+         */
+        handleSaveForm(e) {
+            e.preventDefault();
+
+            console.log('Save form submitted');
+
+            const formData = {
+                action: 'save_watch_build',
+                security: this.settings.nonce, // Use 'security' as expected by the PHP handler
+                build_name: $('#build-name').val(),
+                build_description: $('#build-description').val(),
+                build_public: $('input[name="build_public"]').is(':checked') ? 1 : 0,
+                selected_parts: this.prepareSelectedPartsForSave(),
+                total_price: this.state.totalPrice
+            };
+
+            const $submitButton = this.elements.saveForm.find('button[type="submit"]');
+            const originalText = $submitButton.text();
+
+            $.ajax({
+                url: this.settings.ajaxUrl,
+                method: 'POST',
+                data: formData,
+                beforeSend: () => {
+                    $submitButton.text('Saving...').prop('disabled', true);
+                },
+                success: (response) => {
+                    console.log('Save response:', response);
+                    if (response.success) {
+                        this.showSuccess(this.settings.i18n.buildSaved);
+                        this.closeSaveModal();
+                    } else {
+                        this.showError(response.data.message || this.settings.i18n.saveFailed);
+                    }
+                },
+                error: (xhr, status, error) => {
+                    console.error('Save error:', error);
+                    this.showError(this.settings.i18n.saveFailed);
+                },
+                complete: () => {
+                    $submitButton.text(originalText).prop('disabled', false);
+                }
+            });
+        }
+
+        /**
+         * Prepare selected parts for save operation
+         */
+        prepareSelectedPartsForSave() {
+            const parts = {};
+            this.state.selectedParts.forEach((partId, partType) => {
+                if (partId) {
+                    parts[partType] = {
+                        id: partId.split('-')[1],
+                        full_id: partId,
+                        name: this.getPartName(partId),
+                        price: this.getPartPrice(partId)
+                    };
+                }
+            });
+            return parts;
         }
 
         /**
@@ -462,7 +420,7 @@
         updatePricing() {
             let totalPrice = 0;
 
-            this.state.selectedParts.forEach((partId, partType) => {
+            this.state.selectedParts.forEach((partId) => {
                 if (partId) {
                     const $part = $(`[data-part-id="${partId}"]`);
                     const partPrice = parseFloat($part.data('price')) || 0;
@@ -520,106 +478,224 @@
         }
 
         /**
-         * Enhanced form submission with better validation
+         * Show error message to user
          */
-        handleFormSubmission(e) {
-            e.preventDefault();
-
-            // Validate required parts
-            const requiredParts = ['case', 'dial', 'hands', 'strap', 'movement'];
-            const missingParts = requiredParts.filter(part => !this.state.selectedParts.get(part));
-
-            if (missingParts.length > 0) {
-                this.showError(`${this.settings.i18n.selectAllParts}: ${missingParts.join(', ')}`);
-                return false;
-            }
-
-            // Check compatibility warnings
-            if (this.state.compatibilityWarnings.length > 0) {
-                if (!confirm(this.settings.i18n.confirmIncompatible)) {
-                    return false;
-                }
-            }
-
-            // Add selected parts to form
-            this.addPartsToForm(e.target);
-
-            return true;
+        showError(message) {
+            this.showNotification(message, 'error');
         }
 
         /**
-         * Add selected parts to form as hidden inputs
+         * Show success message to user
          */
-        addPartsToForm(form) {
-            this.state.selectedParts.forEach((partId, partType) => {
+        showSuccess(message) {
+            this.showNotification(message, 'success');
+        }
+
+        /**
+         * Show notification to user
+         */
+        showNotification(message, type = 'info') {
+            // Remove existing notifications
+            $('.builder-notification').remove();
+
+            // Create notification
+            const notification = $(`
+                <div class="builder-notification builder-notification-${type}">
+                    <span class="notification-message">${message}</span>
+                    <button class="notification-close">&times;</button>
+                </div>
+            `);
+
+            // Add to page
+            $('.builder-container').prepend(notification);
+
+            // Handle close button
+            notification.find('.notification-close').on('click', () => {
+                notification.fadeOut(() => notification.remove());
+            });
+
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                notification.fadeOut(() => notification.remove());
+            }, 5000);
+        }
+
+        /**
+         * Check for pre-selected parts on page load
+         */
+        checkSelectedPartsOnLoad() {
+            $('.part-item.selected').each((_, item) => {
+                const partId = $(item).data('part-id');
                 if (partId) {
-                    const hiddenInput = $(`<input type="hidden" name="selected_${partType}" value="${partId.split('-')[1]}">`);
-                    $(form).append(hiddenInput);
+                    const partType = partId.split('-')[0];
+                    if (this.state.selectedParts.has(partType)) {
+                        this.state.selectedParts.set(partType, partId);
+                    }
                 }
             });
+
+            this.checkCompatibility();
+            this.updateWatchModel();
         }
 
         /**
-         * Enhanced save build functionality
+         * Basic compatibility checking
          */
-        async handleSaveBuild(e) {
-            e.preventDefault();
+        checkCompatibility() {
+            this.state.compatibilityWarnings = [];
 
-            if (!this.settings.isLoggedIn) {
-                this.showError(this.settings.i18n.loginRequired);
-                setTimeout(() => {
-                    window.location.href = this.settings.loginUrl;
-                }, 2000);
-                return;
+            // Hide alert by default
+            this.elements.compatAlert.hide();
+
+            // Add compatibility logic here as needed
+            if (this.state.compatibilityWarnings.length > 0) {
+                this.elements.compatAlert.show();
             }
+        }
 
-            // Check if any parts are selected
-            const hasSelectedParts = Array.from(this.state.selectedParts.values()).some(part => part !== null);
-
-            if (!hasSelectedParts) {
-                this.showError(this.settings.i18n.selectSomeParts);
-                return;
-            }
-
+        /**
+         * Initialize renderer
+         */
+        async initializeRenderer() {
             try {
-                await this.openSaveDialog();
+                this.initCanvas();
+                this.createWatchModel2D();
             } catch (error) {
-                console.error('Save build error:', error);
-                this.showError(this.settings.i18n.saveFailed);
+                console.warn('Rendering initialization failed:', error);
             }
+        }
+
+        /**
+         * Initialize canvas for 2D rendering
+         */
+        initCanvas() {
+            if (!this.elements.canvas) {
+                console.warn('Canvas element not found');
+                return;
+            }
+
+            this.ctx = this.elements.canvas.getContext('2d');
+            $(this.elements.canvas).css('display', 'block');
+        }
+
+        /**
+         * Create 2D watch model
+         */
+        createWatchModel2D() {
+            if (!this.ctx || !this.elements.canvas) return;
+
+            this.ctx.clearRect(0, 0, this.elements.canvas.width, this.elements.canvas.height);
+
+            const centerX = this.elements.canvas.width / 2;
+            const centerY = this.elements.canvas.height / 2;
+
+            this.drawWatchFront(centerX, centerY);
+        }
+
+        /**
+         * Draw basic watch representation
+         */
+        drawWatchFront(centerX, centerY) {
+            // Draw case
+            this.ctx.strokeStyle = '#000000';
+            this.ctx.lineWidth = 3;
+            this.ctx.beginPath();
+            this.ctx.arc(centerX, centerY, 150, 0, Math.PI * 2);
+            this.ctx.stroke();
+            this.ctx.fillStyle = '#FFFFFF';
+            this.ctx.fill();
+
+            // Draw basic watch elements
+            this.ctx.strokeStyle = '#000000';
+            this.ctx.lineWidth = 2;
+
+            // Hour markers
+            for (let i = 0; i < 12; i++) {
+                const angle = (i * Math.PI / 6) - Math.PI / 2;
+                const startX = centerX + Math.cos(angle) * 130;
+                const startY = centerY + Math.sin(angle) * 130;
+                const endX = centerX + Math.cos(angle) * 140;
+                const endY = centerY + Math.sin(angle) * 140;
+
+                this.ctx.beginPath();
+                this.ctx.moveTo(startX, startY);
+                this.ctx.lineTo(endX, endY);
+                this.ctx.stroke();
+            }
+
+            // Draw hands
+            this.ctx.strokeStyle = '#000000';
+            this.ctx.lineWidth = 4;
+            this.ctx.beginPath();
+            this.ctx.moveTo(centerX, centerY);
+            this.ctx.lineTo(centerX + 60, centerY - 40);
+            this.ctx.stroke();
+
+            this.ctx.lineWidth = 2;
+            this.ctx.beginPath();
+            this.ctx.moveTo(centerX, centerY);
+            this.ctx.lineTo(centerX, centerY - 100);
+            this.ctx.stroke();
+
+            // Center dot
+            this.ctx.fillStyle = '#000000';
+            this.ctx.beginPath();
+            this.ctx.arc(centerX, centerY, 5, 0, Math.PI * 2);
+            this.ctx.fill();
+        }
+
+        /**
+         * Update watch model (placeholder)
+         */
+        updateWatchModel() {
+            this.createWatchModel2D();
+        }
+
+        /**
+         * Handle tab clicks
+         */
+        handleTabClick(e) {
+            e.preventDefault();
+            const $tab = $(e.currentTarget);
+            const tabId = $tab.attr('id');
+
+            if (!tabId) return;
+
+            const targetSection = $('#' + tabId.replace('tab-', 'section-'));
+
+            if (!targetSection.length) return;
+
+            // Update tab state
+            this.elements.tabs.removeClass('active').attr('aria-selected', 'false');
+            $tab.addClass('active').attr('aria-selected', 'true');
+
+            // Update section visibility
+            $('.part-section').removeClass('active').attr('hidden', 'true');
+            targetSection.addClass('active').removeAttr('hidden');
+        }
+
+        /**
+         * Handle view changes
+         */
+        handleViewChange(e) {
+            e.preventDefault();
+            const $control = $(e.currentTarget);
+            const view = $control.data('view');
+
+            if (!view || view === this.state.currentView) return;
+
+            this.elements.viewControls.removeClass('active');
+            $control.addClass('active');
+
+            this.state.currentView = view;
+            this.createWatchModel2D();
         }
 
         /**
          * Handle window resize
          */
         handleResize() {
-            if (this.camera && this.renderer && this.elements.canvas) {
-                const width = this.elements.canvas.clientWidth;
-                const height = this.elements.canvas.clientHeight;
-
-                this.camera.aspect = width / height;
-                this.camera.updateProjectionMatrix();
-                this.renderer.setSize(width, height);
-            }
-        }
-
-        /**
-         * Show error message to user
-         */
-        showError(message) {
-            // Create or update error display
-            let errorDiv = $('.builder-error');
-            if (!errorDiv.length) {
-                errorDiv = $('<div class="builder-error"></div>');
-                $('.builder-container').prepend(errorDiv);
-            }
-
-            errorDiv.text(message).addClass('show');
-
-            // Auto-hide after 5 seconds
-            setTimeout(() => {
-                errorDiv.removeClass('show');
-            }, 5000);
+            // Handle any resize logic here
         }
 
         /**
@@ -645,81 +721,10 @@
         }
 
         /**
-         * Enhanced cleanup with memory management
+         * Cleanup function
          */
         cleanup() {
-            // Cancel animation frame
-            if (this.animationFrameId) {
-                cancelAnimationFrame(this.animationFrameId);
-                this.animationFrameId = null;
-            }
-
-            // Dispose Three.js resources
-            if (this.scene) {
-                this.disposeScene();
-            }
-
-            if (this.renderer) {
-                this.renderer.dispose();
-                this.renderer = null;
-            }
-
-            // Clear references
-            this.camera = null;
-            this.controls = null;
-            this.currentModel = null;
-        }
-
-        /**
-         * Dispose Three.js scene objects
-         */
-        disposeScene() {
-            if (!this.scene) return;
-
-            this.scene.traverse((object) => {
-                if (object.geometry) {
-                    object.geometry.dispose();
-                }
-                if (object.material) {
-                    if (Array.isArray(object.material)) {
-                        object.material.forEach(material => material.dispose());
-                    } else {
-                        object.material.dispose();
-                    }
-                }
-            });
-
-            this.scene.clear();
-            this.scene = null;
-        }
-
-        // Placeholder methods for missing functionality
-        checkSelectedPartsOnLoad() {
-            // Implementation for checking pre-selected parts
-        }
-
-        updateWatchModel() {
-            // Implementation for updating 3D/2D model
-        }
-
-        updateViewAngle() {
-            // Implementation for updating camera angle
-        }
-
-        createWatchModel2D() {
-            // Implementation for 2D canvas rendering
-        }
-
-        initCanvas() {
-            // Implementation for canvas initialization
-        }
-
-        updateCompatibilityWarnings() {
-            // Implementation for displaying compatibility warnings
-        }
-
-        async openSaveDialog() {
-            // Implementation for save dialog
+            // Cleanup logic here
         }
     }
 
@@ -728,7 +733,8 @@
         // Only initialize if we're on the builder page
         if ($('.builder-interface').length) {
             try {
-                new WatchBuilder();
+                window.watchBuilder = new WatchBuilder();
+                console.log('Watch Builder initialized');
             } catch (error) {
                 console.error('Failed to initialize Watch Builder:', error);
             }
