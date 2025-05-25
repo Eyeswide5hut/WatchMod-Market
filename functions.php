@@ -154,10 +154,11 @@ function watchmodmarket_scripts() {
             array('watchmodmarket-main'),
             WATCHMODMARKET_VERSION
         );
-    } elseif (is_page('builder') && file_exists(WATCHMODMARKET_DIR . '/assets/css/components.css')) {
+    } elseif (is_page('builder') && file_exists(WATCHMODMARKET_DIR . '/assets/css/watch-builder.css')) {
+        // Watch Builder specific styles
         wp_enqueue_style(
             'watchmodmarket-builder',
-            WATCHMODMARKET_URI . '/assets/css/components.css',
+            WATCHMODMARKET_URI . '/assets/css/watch-builder.css',
             array('watchmodmarket-main'),
             WATCHMODMARKET_VERSION
         );
@@ -209,15 +210,67 @@ function watchmodmarket_scripts() {
         );
     }
     
-    // Page-specific JS - Only load if the files exist
-    if (is_page('builder') && file_exists(WATCHMODMARKET_DIR . '/assets/js/watch-builder.js')) {
+    // Page-specific JS - Enhanced watch builder loading
+    if (is_page('builder') || is_page_template('page-templates/page-watch-builder.php')) {
+        // Three.js for 3D rendering (load from CDN)
         wp_enqueue_script(
-            'watchmodmarket-builder',
-            WATCHMODMARKET_URI . '/assets/js/watch-builder.js',
-            array('jquery'),
-            WATCHMODMARKET_VERSION,
+            'threejs',
+            'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js',
+            array(),
+            'r128',
             true
         );
+        
+        // Three.js OrbitControls
+        wp_enqueue_script(
+            'threejs-orbit-controls',
+            'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js',
+            array('threejs'),
+            '0.128.0',
+            true
+        );
+        
+        // Enhanced Watch Builder JavaScript
+        if (file_exists(WATCHMODMARKET_DIR . '/assets/js/watch-builder.js')) {
+            wp_enqueue_script(
+                'watchmodmarket-builder',
+                WATCHMODMARKET_URI . '/assets/js/watch-builder.js',
+                array('jquery', 'threejs'),
+                WATCHMODMARKET_VERSION,
+                true
+            );
+            
+            // Localize script with builder-specific data
+            wp_localize_script(
+                'watchmodmarket-builder',
+                'wpData',
+                array(
+                    'ajaxUrl'         => admin_url('admin-ajax.php'),
+                    'nonce'           => wp_create_nonce('watch_builder_nonce'),
+                    'isLoggedIn'      => is_user_logged_in(),
+                    'loginUrl'        => wp_login_url(get_permalink()),
+                    'currencySymbol'  => get_woocommerce_currency_symbol(),
+                    'themeUrl'        => get_template_directory_uri(),
+                    'i18n'            => array(
+                        'incompatibleMovement' => __('The selected movement is not compatible with this case.', 'watchmodmarket'),
+                        'dialTooBig'          => __('The selected dial is too large for this case.', 'watchmodmarket'),
+                        'incompatibleHands'   => __('The selected hands are not compatible with this movement.', 'watchmodmarket'),
+                        'loginRequired'       => __('You must be logged in to save builds. Please log in or create an account.', 'watchmodmarket'),
+                        'selectSomeParts'     => __('Please select at least one part to save a build.', 'watchmodmarket'),
+                        'saveBuild'          => __('Save Your Build', 'watchmodmarket'),
+                        'buildName'          => __('Build Name', 'watchmodmarket'),
+                        'buildDescription'   => __('Description (Optional)', 'watchmodmarket'),
+                        'makePublic'         => __('Make this build public in the community', 'watchmodmarket'),
+                        'saveButton'         => __('Save Build', 'watchmodmarket'),
+                        'saving'             => __('Saving...', 'watchmodmarket'),
+                        'buildSaved'         => __('Your build has been saved successfully!', 'watchmodmarket'),
+                        'saveFailed'         => __('Failed to save your build. Please try again.', 'watchmodmarket'),
+                        'selectAllParts'     => __('Please select all required parts', 'watchmodmarket'),
+                        'confirmIncompatible' => __('There are compatibility warnings. Do you still want to add this build to cart?', 'watchmodmarket')
+                    )
+                )
+            );
+        }
     } elseif ((is_page('shop') || is_shop()) && file_exists(WATCHMODMARKET_DIR . '/assets/js/shop.js')) {
         wp_enqueue_script(
             'watchmodmarket-shop',
@@ -244,6 +297,32 @@ function watchmodmarket_scripts() {
 add_action('wp_enqueue_scripts', 'watchmodmarket_scripts');
 
 /**
+ * Enhanced script loading for watch builder page
+ */
+function watchmodmarket_builder_scripts() {
+    // Only load on builder pages
+    if (!is_page('builder') && !is_page_template('page-templates/page-watch-builder.php')) {
+        return;
+    }
+    
+    // Add script loading optimization
+    add_filter('script_loader_tag', 'watchmodmarket_add_script_attributes', 10, 3);
+}
+add_action('wp_enqueue_scripts', 'watchmodmarket_builder_scripts', 5);
+
+/**
+ * Add async/defer attributes to specific scripts
+ */
+function watchmodmarket_add_script_attributes($tag, $handle, $src) {
+    // Add defer to Three.js scripts for better performance
+    if (in_array($handle, array('threejs', 'threejs-orbit-controls'))) {
+        $tag = str_replace(' src', ' defer src', $tag);
+    }
+    
+    return $tag;
+}
+
+/**
  * Create directory structure if it doesn't exist
  */
 function watchmodmarket_create_directories() {
@@ -252,7 +331,13 @@ function watchmodmarket_create_directories() {
         '/assets/css',
         '/assets/js',
         '/assets/images',
-        '/assets/images/testimonials', // Add this directory for testimonial avatars
+        '/assets/images/testimonials',
+        '/assets/models',          // For 3D watch models
+        '/assets/models/cases',    // Case 3D models
+        '/assets/models/dials',    // Dial 3D models
+        '/assets/models/hands',    // Hands 3D models
+        '/assets/models/straps',   // Strap 3D models
+        '/assets/models/movements', // Movement 3D models
         '/inc',
         '/inc/core',
         '/inc/features',
@@ -340,6 +425,132 @@ function watchmodmarket_widgets_init() {
 add_action('widgets_init', 'watchmodmarket_widgets_init');
 
 /**
+ * AJAX handler for saving watch builds
+ */
+function watchmodmarket_save_watch_build() {
+    // Check nonce for security
+    if (!isset($_POST['security']) || !wp_verify_nonce($_POST['security'], 'watch_builder_nonce')) {
+        wp_send_json_error(array('message' => __('Security check failed', 'watchmodmarket')));
+        wp_die();
+    }
+    
+    // Check if user is logged in
+    if (!is_user_logged_in()) {
+        wp_send_json_error(array('message' => __('You must be logged in to save builds', 'watchmodmarket')));
+        wp_die();
+    }
+    
+    // Get form data
+    $build_name = sanitize_text_field($_POST['build_name'] ?? '');
+    $build_description = sanitize_textarea_field($_POST['build_description'] ?? '');
+    $is_public = isset($_POST['build_public']) ? 1 : 0;
+    $selected_parts = $_POST['selected_parts'] ?? array();
+    
+    // Validate data
+    if (empty($build_name)) {
+        wp_send_json_error(array('message' => __('Build name is required', 'watchmodmarket')));
+        wp_die();
+    }
+    
+    if (empty($selected_parts) || !is_array($selected_parts)) {
+        wp_send_json_error(array('message' => __('No parts selected', 'watchmodmarket')));
+        wp_die();
+    }
+    
+    // Create the build post
+    $post_data = array(
+        'post_title'   => $build_name,
+        'post_content' => $build_description,
+        'post_status'  => $is_public ? 'publish' : 'private',
+        'post_type'    => 'watch_build',
+        'post_author'  => get_current_user_id(),
+    );
+    
+    $build_id = wp_insert_post($post_data);
+    
+    if (is_wp_error($build_id)) {
+        wp_send_json_error(array('message' => __('Failed to save build', 'watchmodmarket')));
+        wp_die();
+    }
+    
+    // Save the selected parts as post meta
+    update_post_meta($build_id, '_selected_parts', $selected_parts);
+    update_post_meta($build_id, '_build_visibility', $is_public ? 'public' : 'private');
+    
+    wp_send_json_success(array(
+        'message' => __('Build saved successfully!', 'watchmodmarket'),
+        'build_id' => $build_id,
+        'build_url' => get_permalink($build_id)
+    ));
+}
+add_action('wp_ajax_save_watch_build', 'watchmodmarket_save_watch_build');
+
+/**
+ * Enhanced Quick View AJAX handler
+ */
+function watchmodmarket_quick_view_ajax() {
+    // Check nonce for security
+    if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'watchmodmarket_ajax')) {
+        wp_send_json_error(array('message' => __('Security check failed', 'watchmodmarket')));
+        wp_die();
+    }
+    
+    // Get product ID from request
+    $product_id = isset($_POST['product_id']) ? intval($_POST['product_id']) : 0;
+    
+    // Validate product ID
+    if ($product_id <= 0) {
+        wp_send_json_error(array('message' => __('Invalid product ID', 'watchmodmarket')));
+        wp_die();
+    }
+    
+    // Get product object
+    $product = wc_get_product($product_id);
+    
+    // Verify product exists
+    if (!$product) {
+        wp_send_json_error(array('message' => __('Product not found', 'watchmodmarket')));
+        wp_die();
+    }
+    
+    // Get product data
+    $data = array(
+        'id'          => $product_id,
+        'title'       => $product->get_name(),
+        'price'       => $product->get_price_html(),
+        'description' => $product->get_short_description(),
+        'url'         => get_permalink($product_id),
+        'image'       => get_the_post_thumbnail_url($product_id, 'medium'),
+        'gallery'     => array(),
+        'attributes'  => array(),
+        'rating'      => $product->get_average_rating(),
+        'review_count' => $product->get_review_count(),
+        'stock_status' => $product->is_in_stock() ? 'instock' : 'outofstock',
+    );
+    
+    // Get gallery images
+    $attachment_ids = $product->get_gallery_image_ids();
+    foreach ($attachment_ids as $attachment_id) {
+        $data['gallery'][] = wp_get_attachment_image_url($attachment_id, 'medium');
+    }
+    
+    // Get product attributes
+    $attributes = $product->get_attributes();
+    foreach ($attributes as $attribute) {
+        if ($attribute->get_visible()) {
+            $data['attributes'][] = array(
+                'name' => wc_attribute_label($attribute->get_name()),
+                'value' => $product->get_attribute($attribute->get_name())
+            );
+        }
+    }
+    
+    wp_send_json_success($data);
+}
+add_action('wp_ajax_watchmodmarket_quick_view', 'watchmodmarket_quick_view_ajax');
+add_action('wp_ajax_nopriv_watchmodmarket_quick_view', 'watchmodmarket_quick_view_ajax');
+
+/**
  * Implement custom logo with fallback
  */
 function watchmodmarket_custom_logo() {
@@ -362,6 +573,27 @@ function watchmodmarket_menu_fallback() {
         echo '<ul class="main-menu"><li><a href="' . esc_url(home_url()) . '">' . 
              esc_html__('Home', 'watchmodmarket') . '</a></li></ul>';
     }
+}
+
+/**
+ * Default menu for header
+ */
+function watchmodmarket_default_menu() {
+    $menu_items = array(
+        home_url('/') => __('Home', 'watchmodmarket'),
+        get_permalink(wc_get_page_id('shop')) => __('Shop', 'watchmodmarket'),
+        get_permalink(get_page_by_path('builder')) => __('Builder', 'watchmodmarket'),
+        get_permalink(get_page_by_path('group-buy')) => __('Group Buys', 'watchmodmarket'),
+        get_permalink(get_page_by_path('contact')) => __('Contact', 'watchmodmarket'),
+    );
+    
+    echo '<ul id="primary-menu" class="main-menu">';
+    foreach ($menu_items as $url => $label) {
+        if ($url) {
+            echo '<li><a href="' . esc_url($url) . '">' . esc_html($label) . '</a></li>';
+        }
+    }
+    echo '</ul>';
 }
 
 /**
@@ -501,379 +733,3 @@ add_action('init', 'watchmodmarket_create_product_attributes');
 add_filter('woocommerce_show_page_title', '__return_false');
 remove_action('woocommerce_before_shop_loop', 'woocommerce_result_count', 20);
 remove_action('woocommerce_before_shop_loop', 'woocommerce_catalog_ordering', 30);
-
-/**
- * AJAX handler for Quick View functionality - Consolidated version
- */
-function watchmodmarket_quick_view_ajax() {
-    // Check nonce for security
-    if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'watchmodmarket_ajax')) {
-        wp_send_json_error(array('message' => __('Security check failed', 'watchmodmarket')));
-        wp_die();
-    }
-    
-    // Get product ID from request
-    $product_id = isset($_POST['product_id']) ? intval($_POST['product_id']) : 0;
-    
-    // Validate product ID
-    if ($product_id <= 0) {
-        wp_send_json_error(array('message' => __('Invalid product ID', 'watchmodmarket')));
-        wp_die();
-    }
-    
-    // Get product object
-    $product = wc_get_product($product_id);
-    
-    // Verify product exists
-    if (!$product) {
-        wp_send_json_error(array('message' => __('Product not found', 'watchmodmarket')));
-        wp_die();
-    }
-    
-    // Get product data
-    $data = array(
-        'id'          => $product_id,
-        'title'       => $product->get_name(),
-        'price'       => $product->get_price_html(),
-        'description' => $product->get_short_description(),
-        'url'         => get_permalink($product_id),
-        'image'       => get_the_post_thumbnail_url($product_id, 'medium'),
-    );
-    
-    wp_send_json_success($data);
-}
-// Consolidated AJAX handlers to avoid duplicates
-add_action('wp_ajax_watchmodmarket_quick_view', 'watchmodmarket_quick_view_ajax');
-add_action('wp_ajax_nopriv_watchmodmarket_quick_view', 'watchmodmarket_quick_view_ajax');
-
-/**
- * AJAX handler for recently viewed products
- */
-function watchmodmarket_get_recently_viewed_products() {
-    // No nonce check needed as this is a read-only operation
-    
-    $product_ids = isset($_POST['product_ids']) ? array_map('intval', $_POST['product_ids']) : array();
-    
-    if (empty($product_ids)) {
-        wp_send_json_error('No products to display');
-    }
-    
-    $args = array(
-        'post_type' => 'product',
-        'post__in' => $product_ids,
-        'posts_per_page' => count($product_ids),
-        'orderby' => 'post__in'
-    );
-    
-    $query = new WP_Query($args);
-    
-    ob_start();
-    
-    if ($query->have_posts()) {
-        while ($query->have_posts()) {
-            $query->the_post();
-            wc_get_template_part('content', 'product');
-        }
-        wp_reset_postdata();
-    }
-    
-    $html = ob_get_clean();
-    
-    if (empty($html)) {
-        wp_send_json_error('No products found');
-    }
-    
-    wp_send_json_success($html);
-}
-add_action('wp_ajax_get_recently_viewed_products', 'watchmodmarket_get_recently_viewed_products');
-add_action('wp_ajax_nopriv_get_recently_viewed_products', 'watchmodmarket_get_recently_viewed_products');
-
-/**
- * AJAX handler for adding to cart
- */
-function watchmodmarket_add_to_cart_ajax() {
-    // Check nonce
-    if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'watchmodmarket_ajax')) {
-        wp_send_json_error(array('message' => __('Invalid nonce', 'watchmodmarket')));
-        wp_die();
-    }
-    
-    // Check product ID
-    if (!isset($_POST['product_id']) || empty($_POST['product_id'])) {
-        wp_send_json_error(array('message' => __('Product ID is required', 'watchmodmarket')));
-        wp_die();
-    }
-    
-    $product_id = absint($_POST['product_id']);
-    $quantity = isset($_POST['quantity']) ? absint($_POST['quantity']) : 1;
-    
-    // Add to cart
-    $cart_item_key = WC()->cart->add_to_cart($product_id, $quantity);
-    
-    if (!$cart_item_key) {
-        wp_send_json_error(array('message' => __('Failed to add product to cart', 'watchmodmarket')));
-        wp_die();
-    }
-    
-    // Get cart count
-    $cart_count = WC()->cart->get_cart_contents_count();
-    
-    wp_send_json_success(array(
-        'message' => __('Product added to cart successfully', 'watchmodmarket'),
-        'cart_count' => $cart_count
-    ));
-}
-add_action('wp_ajax_watchmodmarket_add_to_cart', 'watchmodmarket_add_to_cart_ajax');
-add_action('wp_ajax_nopriv_watchmodmarket_add_to_cart', 'watchmodmarket_add_to_cart_ajax');
-
-/**
- * AJAX handler for watchlist functionality
- */
-function watchmodmarket_add_to_watchlist_ajax() {
-    // Check nonce
-    if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'watchmodmarket_ajax')) {
-        wp_send_json_error(array('message' => __('Security check failed', 'watchmodmarket')));
-        wp_die();
-    }
-    
-    // Check if user is logged in
-    if (!is_user_logged_in()) {
-        wp_send_json_error(array('message' => __('You must be logged in to add to wishlist', 'watchmodmarket')));
-        wp_die();
-    }
-    
-    // Check product ID
-    if (!isset($_POST['product_id']) || empty($_POST['product_id'])) {
-        wp_send_json_error(array('message' => __('Product ID is required', 'watchmodmarket')));
-        wp_die();
-    }
-    
-    $product_id = absint($_POST['product_id']);
-    $user_id = get_current_user_id();
-    
-    // Get current watchlist
-    $watchlist = get_user_meta($user_id, 'watchmodmarket_watchlist', true);
-    
-    if (!is_array($watchlist)) {
-        $watchlist = array();
-    }
-    
-    // Add product to watchlist if not already in it
-    if (!in_array($product_id, $watchlist)) {
-        $watchlist[] = $product_id;
-        update_user_meta($user_id, 'watchmodmarket_watchlist', $watchlist);
-        $action = 'added';
-        $message = __('Added to watchlist', 'watchmodmarket');
-    } else {
-        // Remove from watchlist if already there (toggle functionality)
-        $watchlist = array_diff($watchlist, array($product_id));
-        update_user_meta($user_id, 'watchmodmarket_watchlist', $watchlist);
-        $action = 'removed';
-        $message = __('Removed from watchlist', 'watchmodmarket');
-    }
-    
-    wp_send_json_success(array(
-        'action' => $action,
-        'message' => $message,
-        'count' => count($watchlist)
-    ));
-}
-add_action('wp_ajax_watchmodmarket_add_to_watchlist', 'watchmodmarket_add_to_watchlist_ajax');
-add_action('wp_ajax_nopriv_watchmodmarket_add_to_watchlist', function() {
-    wp_send_json_error(array('message' => __('Please log in to use the watchlist feature', 'watchmodmarket')));
-});
-
-/**
- * Group Buy specific functions
- */
-
-/**
- * Get the count of active group buy campaigns
- *
- * @return int Number of active campaigns
- */
-function watchmodmarket_get_active_campaigns_count() {
-    // Query for active group buys and pre-orders
-    $args = array(
-        'post_type'      => 'product',
-        'posts_per_page' => -1,
-        'meta_query'     => array(
-            'relation' => 'OR',
-            array(
-                'key'     => '_groupbuy_status',
-                'value'   => 'active',
-                'compare' => '=',
-            ),
-            array(
-                'key'     => '_preorder_status',
-                'value'   => 'upcoming',
-                'compare' => '=',
-            ),
-        ),
-        'tax_query'      => array(
-            'relation' => 'OR',
-            array(
-                'taxonomy' => 'product_tag',
-                'field'    => 'slug',
-                'terms'    => 'group-buy',
-            ),
-            array(
-                'taxonomy' => 'product_tag',
-                'field'    => 'slug',
-                'terms'    => 'pre-order',
-            ),
-        ),
-    );
-    
-    $query = new WP_Query($args);
-    
-    return $query->found_posts;
-}
-
-/**
- * Calculate total savings from all active group buys
- *
- * @return string Total savings, formatted as currency
- */
-function watchmodmarket_get_total_savings() {
-    // Default value if actual calculation isn't possible yet
-    return '$24,780';
-}
-
-/**
- * Get the success rate of group buy campaigns
- *
- * @return string Success rate percentage
- */
-function watchmodmarket_get_success_rate() {
-    // Default value if actual calculation isn't possible yet
-    return '98%';
-}
-
-/**
- * Get the group buy that's ending soonest
- *
- * @return WP_Post|null The soonest ending group buy post
- */
-function watchmodmarket_get_closest_ending_group_buy() {
-    $args = array(
-        'post_type'      => 'product',
-        'posts_per_page' => 1,
-        'meta_key'       => '_groupbuy_end_date',
-        'orderby'        => 'meta_value',
-        'order'          => 'ASC',
-        'meta_query'     => array(
-            array(
-                'key'     => '_groupbuy_status',
-                'value'   => 'active',
-                'compare' => '=',
-            ),
-            array(
-                'key'     => '_groupbuy_end_date',
-                'value'   => date('Y-m-d H:i:s'),
-                'compare' => '>',
-                'type'    => 'DATETIME',
-            ),
-        ),
-        'tax_query'      => array(
-            array(
-                'taxonomy' => 'product_tag',
-                'field'    => 'slug',
-                'terms'    => 'group-buy',
-            ),
-        ),
-    );
-    
-    $query = new WP_Query($args);
-    
-    if ($query->have_posts()) {
-        return $query->posts[0];
-    }
-    
-    return null;
-}
-
-/**
- * Handle newsletter signup for group buy subscriptions
- */
-function watchmodmarket_group_signup_handler() {
-    // Check nonce
-    if (!isset($_POST['group_nonce']) || !wp_verify_nonce($_POST['group_nonce'], 'group_signup')) {
-        wp_die('Security check failed', 'Error', array('response' => 403));
-    }
-    
-    // Get form data
-    $name = isset($_POST['name']) ? sanitize_text_field($_POST['name']) : '';
-    $email = isset($_POST['email']) ? sanitize_email($_POST['email']) : '';
-    $interests = isset($_POST['interests']) ? $_POST['interests'] : array();
-    
-    // Validate data
-    if (empty($email)) {
-        wp_die('Email is required', 'Error', array('response' => 400));
-    }
-    
-    // Process signup
-    $signup_data = array(
-        'name' => $name,
-        'email' => $email,
-        'interests' => $interests,
-        'date' => current_time('mysql'),
-    );
-    
-    // Save to options (for demonstration purposes only)
-    $subscribers = get_option('watchmodmarket_group_subscribers', array());
-    $subscribers[] = $signup_data;
-    update_option('watchmodmarket_group_subscribers', $subscribers);
-    
-    // Send confirmation email
-    $to = $email;
-    $subject = 'Thanks for subscribing to Group Buy updates';
-    $body = "Hello $name,\n\nThank you for subscribing to our Group Buy updates. We'll keep you informed about new opportunities.\n\nRegards,\nThe WatchModMarket Team";
-    $headers = array('Content-Type: text/plain; charset=UTF-8');
-    
-    wp_mail($to, $subject, $body, $headers);
-    
-    // Redirect back to the page
-    wp_redirect(wp_get_referer() . '?signup=success');
-    exit;
-}
-add_action('admin_post_watchmodmarket_group_signup', 'watchmodmarket_group_signup_handler');
-add_action('admin_post_nopriv_watchmodmarket_group_signup', 'watchmodmarket_group_signup_handler');
-
-/**
- * AJAX handler for adding group buy products to cart
- */
-function watchmodmarket_add_group_buy_to_cart_ajax() {
-    // Check nonce for security
-    if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'watchmodmarket_ajax')) {
-        wp_send_json_error(array('message' => __('Security check failed', 'watchmodmarket')));
-        wp_die();
-    }
-    
-    // Get product ID from request
-    $product_id = isset($_POST['product_id']) ? intval($_POST['product_id']) : 0;
-    $quantity = isset($_POST['quantity']) ? intval($_POST['quantity']) : 1;
-    
-    // Validate product ID
-    if ($product_id <= 0) {
-        wp_send_json_error(array('message' => __('Invalid product ID', 'watchmodmarket')));
-        wp_die();
-    }
-    
-    // Add product to cart
-    $cart_item_key = WC()->cart->add_to_cart($product_id, $quantity);
-    
-    if (!$cart_item_key) {
-        wp_send_json_error(array('message' => __('Failed to add product to cart', 'watchmodmarket')));
-        wp_die();
-    }
-    
-    wp_send_json_success(array(
-        'message' => __('Product added to cart successfully', 'watchmodmarket'),
-        'cart_count' => WC()->cart->get_cart_contents_count(),
-        'cart_url' => wc_get_cart_url()
-    ));
-    wp_die();
-}
-add_action('wp_ajax_watchmodmarket_add_group_buy_to_cart', 'watchmodmarket_add_group_buy_to_cart_ajax');
-add_action('wp_ajax_nopriv_watchmodmarket_add_group_buy_to_cart', 'watchmodmarket_add_group_buy_to_cart_ajax');
