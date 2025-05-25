@@ -119,4 +119,4 @@ This theme is licensed under the GPL v2 or later.
 
 ## Support
 
-For theme support, please contact support@watchmodmarket.com or visit our [support forum](https://watchmodmarket.com/support).
+For theme support, please contact support@watchmodmarket.com or visit our [support forum](https://watchmodmarket.com/support)."# WatchMod-Market" 

@@ -5,36 +5,181 @@
 
 function watchmodmarket_customize_register($wp_customize) {
     
-    // Add Promo Banner Section
-    $wp_customize->add_section('watchmodmarket_promo_banner', array(
-        'title'    => __('Promo Banner', 'watchmodmarket'),
+    // Add Announcement Bar Section
+    $wp_customize->add_section('announcement_bar_section', array(
+        'title'    => __('Announcement Bar', 'watchmodmarket'),
         'priority' => 30,
+        'description' => __('Customize the announcement bar that appears at the top of your site.', 'watchmodmarket'),
     ));
-    
-    // Promo Banner Text Setting
-    $wp_customize->add_setting('promo_banner_text', array(
-        'default'           => 'Free shipping on all orders over $100',
+
+    // Show/Hide Announcement Bar
+    $wp_customize->add_setting('show_announcement_bar', array(
+        'default'           => true,
+        'sanitize_callback' => 'watchmodmarket_sanitize_checkbox',
+        'transport'         => 'refresh',
+    ));
+
+    $wp_customize->add_control('show_announcement_bar', array(
+        'label'   => __('Show Announcement Bar', 'watchmodmarket'),
+        'section' => 'announcement_bar_section',
+        'type'    => 'checkbox',
+    ));
+
+    // Announcement Text
+    $wp_customize->add_setting('announcement_text', array(
+        'default'           => __('🎉 Free shipping on orders over $100 | 30-day returns', 'watchmodmarket'),
         'sanitize_callback' => 'sanitize_text_field',
+        'transport'         => 'refresh',
     ));
-    
-    $wp_customize->add_control('promo_banner_text', array(
-        'label'    => __('Promo Banner Text', 'watchmodmarket'),
-        'section'  => 'watchmodmarket_promo_banner',
-        'settings' => 'promo_banner_text',
-        'type'     => 'text',
+
+    $wp_customize->add_control('announcement_text', array(
+        'label'       => __('Announcement Text', 'watchmodmarket'),
+        'section'     => 'announcement_bar_section',
+        'type'        => 'text',
+        'description' => __('Enter the text to display in the announcement bar.', 'watchmodmarket'),
     ));
-    
-    // Promo Banner Link Setting
-    $wp_customize->add_setting('promo_banner_link', array(
-        'default'           => '#',
+
+    // Announcement Link URL
+    $wp_customize->add_setting('announcement_link', array(
+        'default'           => '',
         'sanitize_callback' => 'esc_url_raw',
+        'transport'         => 'refresh',
     ));
-    
-    $wp_customize->add_control('promo_banner_link', array(
-        'label'    => __('Promo Banner Link', 'watchmodmarket'),
-        'section'  => 'watchmodmarket_promo_banner',
-        'settings' => 'promo_banner_link',
-        'type'     => 'url',
+
+    $wp_customize->add_control('announcement_link', array(
+        'label'       => __('Announcement Link URL', 'watchmodmarket'),
+        'section'     => 'announcement_bar_section',
+        'type'        => 'url',
+        'description' => __('Optional: Add a link URL for the announcement button.', 'watchmodmarket'),
+    ));
+
+    // Announcement Link Text
+    $wp_customize->add_setting('announcement_link_text', array(
+        'default'           => __('Shop Now!', 'watchmodmarket'),
+        'sanitize_callback' => 'sanitize_text_field',
+        'transport'         => 'refresh',
+    ));
+
+    $wp_customize->add_control('announcement_link_text', array(
+        'label'       => __('Announcement Link Text', 'watchmodmarket'),
+        'section'     => 'announcement_bar_section',
+        'type'        => 'text',
+        'description' => __('Text for the announcement button.', 'watchmodmarket'),
+    ));
+
+    // Announcement Style
+    $wp_customize->add_setting('announcement_style', array(
+        'default'           => 'default',
+        'sanitize_callback' => 'watchmodmarket_sanitize_select',
+        'transport'         => 'refresh',
+    ));
+
+    $wp_customize->add_control('announcement_style', array(
+        'label'   => __('Announcement Style', 'watchmodmarket'),
+        'section' => 'announcement_bar_section',
+        'type'    => 'select',
+        'choices' => array(
+            'default'  => __('Default (Orange)', 'watchmodmarket'),
+            'sale'     => __('Sale (Red with pulse)', 'watchmodmarket'),
+            'info'     => __('Info (Blue)', 'watchmodmarket'),
+            'success'  => __('Success (Green)', 'watchmodmarket'),
+            'centered' => __('Centered Layout', 'watchmodmarket'),
+        ),
+    ));
+
+    // Show Extras (Currency/Language selectors)
+    $wp_customize->add_setting('show_announcement_extras', array(
+        'default'           => true,
+        'sanitize_callback' => 'watchmodmarket_sanitize_checkbox',
+        'transport'         => 'refresh',
+    ));
+
+    $wp_customize->add_control('show_announcement_extras', array(
+        'label'       => __('Show Currency & Language Selectors', 'watchmodmarket'),
+        'section'     => 'announcement_bar_section',
+        'type'        => 'checkbox',
+        'description' => __('Show currency and language selectors on desktop.', 'watchmodmarket'),
+    ));
+
+    // Show Currency Selector
+    $wp_customize->add_setting('show_currency_selector', array(
+        'default'           => true,
+        'sanitize_callback' => 'watchmodmarket_sanitize_checkbox',
+        'transport'         => 'refresh',
+    ));
+
+    $wp_customize->add_control('show_currency_selector', array(
+        'label'   => __('Show Currency Selector', 'watchmodmarket'),
+        'section' => 'announcement_bar_section',
+        'type'    => 'checkbox',
+    ));
+
+    // Default Currency
+    $wp_customize->add_setting('default_currency', array(
+        'default'           => 'USD',
+        'sanitize_callback' => 'watchmodmarket_sanitize_select',
+        'transport'         => 'refresh',
+    ));
+
+    $wp_customize->add_control('default_currency', array(
+        'label'   => __('Default Currency', 'watchmodmarket'),
+        'section' => 'announcement_bar_section',
+        'type'    => 'select',
+        'choices' => array(
+            'USD' => __('USD - US Dollar', 'watchmodmarket'),
+            'EUR' => __('EUR - Euro', 'watchmodmarket'),
+            'GBP' => __('GBP - British Pound', 'watchmodmarket'),
+            'CAD' => __('CAD - Canadian Dollar', 'watchmodmarket'),
+            'AUD' => __('AUD - Australian Dollar', 'watchmodmarket'),
+            'JPY' => __('JPY - Japanese Yen', 'watchmodmarket'),
+            'CHF' => __('CHF - Swiss Franc', 'watchmodmarket'),
+        ),
+    ));
+
+    // Show Language Selector
+    $wp_customize->add_setting('show_language_selector', array(
+        'default'           => true,
+        'sanitize_callback' => 'watchmodmarket_sanitize_checkbox',
+        'transport'         => 'refresh',
+    ));
+
+    $wp_customize->add_control('show_language_selector', array(
+        'label'   => __('Show Language Selector', 'watchmodmarket'),
+        'section' => 'announcement_bar_section',
+        'type'    => 'checkbox',
+    ));
+
+    // Dismissible Announcement
+    $wp_customize->add_setting('announcement_dismissible', array(
+        'default'           => false,
+        'sanitize_callback' => 'watchmodmarket_sanitize_checkbox',
+        'transport'         => 'refresh',
+    ));
+
+    $wp_customize->add_control('announcement_dismissible', array(
+        'label'       => __('Allow Users to Dismiss', 'watchmodmarket'),
+        'section'     => 'announcement_bar_section',
+        'type'        => 'checkbox',
+        'description' => __('Add a close button to allow users to dismiss the announcement.', 'watchmodmarket'),
+    ));
+
+    // Auto-hide after time
+    $wp_customize->add_setting('announcement_auto_hide', array(
+        'default'           => 0,
+        'sanitize_callback' => 'absint',
+        'transport'         => 'refresh',
+    ));
+
+    $wp_customize->add_control('announcement_auto_hide', array(
+        'label'       => __('Auto Hide After (seconds)', 'watchmodmarket'),
+        'section'     => 'announcement_bar_section',
+        'type'        => 'number',
+        'description' => __('Automatically hide the announcement after X seconds. Set to 0 to disable.', 'watchmodmarket'),
+        'input_attrs' => array(
+            'min'  => 0,
+            'max'  => 300,
+            'step' => 5,
+        ),
     ));
     
     // Hero Section
@@ -221,187 +366,6 @@ function watchmodmarket_customize_register($wp_customize) {
     ));
 }
 add_action('customize_register', 'watchmodmarket_customize_register');
-
-function watchmodmarket_announcement_customizer($wp_customize) {
-    
-    // Add Announcement Bar Section
-    $wp_customize->add_section('announcement_bar_section', array(
-        'title'    => __('Announcement Bar', 'watchmodmarket'),
-        'priority' => 30,
-        'description' => __('Customize the announcement bar that appears at the top of your site.', 'watchmodmarket'),
-    ));
-
-    // Show/Hide Announcement Bar
-    $wp_customize->add_setting('show_announcement_bar', array(
-        'default'           => true,
-        'sanitize_callback' => 'watchmodmarket_sanitize_checkbox',
-        'transport'         => 'refresh',
-    ));
-
-    $wp_customize->add_control('show_announcement_bar', array(
-        'label'   => __('Show Announcement Bar', 'watchmodmarket'),
-        'section' => 'announcement_bar_section',
-        'type'    => 'checkbox',
-    ));
-
-    // Announcement Text
-    $wp_customize->add_setting('announcement_text', array(
-        'default'           => __('🎉 Free shipping on orders over $100 | 30-day returns', 'watchmodmarket'),
-        'sanitize_callback' => 'sanitize_text_field',
-        'transport'         => 'refresh',
-    ));
-
-    $wp_customize->add_control('announcement_text', array(
-        'label'       => __('Announcement Text', 'watchmodmarket'),
-        'section'     => 'announcement_bar_section',
-        'type'        => 'text',
-        'description' => __('Enter the text to display in the announcement bar.', 'watchmodmarket'),
-    ));
-
-    // Announcement Link URL
-    $wp_customize->add_setting('announcement_link', array(
-        'default'           => '',
-        'sanitize_callback' => 'esc_url_raw',
-        'transport'         => 'refresh',
-    ));
-
-    $wp_customize->add_control('announcement_link', array(
-        'label'       => __('Announcement Link URL', 'watchmodmarket'),
-        'section'     => 'announcement_bar_section',
-        'type'        => 'url',
-        'description' => __('Optional: Add a link URL for the announcement button.', 'watchmodmarket'),
-    ));
-
-    // Announcement Link Text
-    $wp_customize->add_setting('announcement_link_text', array(
-        'default'           => __('Shop Now!', 'watchmodmarket'),
-        'sanitize_callback' => 'sanitize_text_field',
-        'transport'         => 'refresh',
-    ));
-
-    $wp_customize->add_control('announcement_link_text', array(
-        'label'       => __('Announcement Link Text', 'watchmodmarket'),
-        'section'     => 'announcement_bar_section',
-        'type'        => 'text',
-        'description' => __('Text for the announcement button.', 'watchmodmarket'),
-    ));
-
-    // Announcement Style
-    $wp_customize->add_setting('announcement_style', array(
-        'default'           => 'default',
-        'sanitize_callback' => 'watchmodmarket_sanitize_select',
-        'transport'         => 'refresh',
-    ));
-
-    $wp_customize->add_control('announcement_style', array(
-        'label'   => __('Announcement Style', 'watchmodmarket'),
-        'section' => 'announcement_bar_section',
-        'type'    => 'select',
-        'choices' => array(
-            'default'  => __('Default (Orange)', 'watchmodmarket'),
-            'sale'     => __('Sale (Red with pulse)', 'watchmodmarket'),
-            'info'     => __('Info (Blue)', 'watchmodmarket'),
-            'success'  => __('Success (Green)', 'watchmodmarket'),
-            'centered' => __('Centered Layout', 'watchmodmarket'),
-        ),
-    ));
-
-    // Show Extras (Currency/Language selectors)
-    $wp_customize->add_setting('show_announcement_extras', array(
-        'default'           => true,
-        'sanitize_callback' => 'watchmodmarket_sanitize_checkbox',
-        'transport'         => 'refresh',
-    ));
-
-    $wp_customize->add_control('show_announcement_extras', array(
-        'label'       => __('Show Currency & Language Selectors', 'watchmodmarket'),
-        'section'     => 'announcement_bar_section',
-        'type'        => 'checkbox',
-        'description' => __('Show currency and language selectors on desktop.', 'watchmodmarket'),
-    ));
-
-    // Show Currency Selector
-    $wp_customize->add_setting('show_currency_selector', array(
-        'default'           => true,
-        'sanitize_callback' => 'watchmodmarket_sanitize_checkbox',
-        'transport'         => 'refresh',
-    ));
-
-    $wp_customize->add_control('show_currency_selector', array(
-        'label'   => __('Show Currency Selector', 'watchmodmarket'),
-        'section' => 'announcement_bar_section',
-        'type'    => 'checkbox',
-    ));
-
-    // Default Currency
-    $wp_customize->add_setting('default_currency', array(
-        'default'           => 'USD',
-        'sanitize_callback' => 'watchmodmarket_sanitize_select',
-        'transport'         => 'refresh',
-    ));
-
-    $wp_customize->add_control('default_currency', array(
-        'label'   => __('Default Currency', 'watchmodmarket'),
-        'section' => 'announcement_bar_section',
-        'type'    => 'select',
-        'choices' => array(
-            'USD' => __('USD - US Dollar', 'watchmodmarket'),
-            'EUR' => __('EUR - Euro', 'watchmodmarket'),
-            'GBP' => __('GBP - British Pound', 'watchmodmarket'),
-            'CAD' => __('CAD - Canadian Dollar', 'watchmodmarket'),
-            'AUD' => __('AUD - Australian Dollar', 'watchmodmarket'),
-            'JPY' => __('JPY - Japanese Yen', 'watchmodmarket'),
-            'CHF' => __('CHF - Swiss Franc', 'watchmodmarket'),
-        ),
-    ));
-
-    // Show Language Selector
-    $wp_customize->add_setting('show_language_selector', array(
-        'default'           => true,
-        'sanitize_callback' => 'watchmodmarket_sanitize_checkbox',
-        'transport'         => 'refresh',
-    ));
-
-    $wp_customize->add_control('show_language_selector', array(
-        'label'   => __('Show Language Selector', 'watchmodmarket'),
-        'section' => 'announcement_bar_section',
-        'type'    => 'checkbox',
-    ));
-
-    // Dismissible Announcement
-    $wp_customize->add_setting('announcement_dismissible', array(
-        'default'           => false,
-        'sanitize_callback' => 'watchmodmarket_sanitize_checkbox',
-        'transport'         => 'refresh',
-    ));
-
-    $wp_customize->add_control('announcement_dismissible', array(
-        'label'       => __('Allow Users to Dismiss', 'watchmodmarket'),
-        'section'     => 'announcement_bar_section',
-        'type'        => 'checkbox',
-        'description' => __('Add a close button to allow users to dismiss the announcement.', 'watchmodmarket'),
-    ));
-
-    // Auto-hide after time
-    $wp_customize->add_setting('announcement_auto_hide', array(
-        'default'           => 0,
-        'sanitize_callback' => 'absint',
-        'transport'         => 'refresh',
-    ));
-
-    $wp_customize->add_control('announcement_auto_hide', array(
-        'label'       => __('Auto Hide After (seconds)', 'watchmodmarket'),
-        'section'     => 'announcement_bar_section',
-        'type'        => 'number',
-        'description' => __('Automatically hide the announcement after X seconds. Set to 0 to disable.', 'watchmodmarket'),
-        'input_attrs' => array(
-            'min'  => 0,
-            'max'  => 300,
-            'step' => 5,
-        ),
-    ));
-}
-add_action('customize_register', 'watchmodmarket_announcement_customizer');
 
 /**
  * Sanitize checkbox values

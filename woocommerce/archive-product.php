@@ -92,57 +92,74 @@ remove_action('woocommerce_after_main_content', 'woocommerce_output_content_wrap
                     </div>
                     
                     <!-- Best Seller Product -->
-                    <div class="featured-product-wrapper">
-                        <?php
-                        $args = array(
-                            'post_type' => 'product',
-                            'posts_per_page' => 1,
-                            'meta_key' => 'total_sales',
-                            'orderby' => 'meta_value_num',
-                            'order' => 'DESC',
-                        );
-                        
-                        $featured_products = new WP_Query($args);
-                        
-                        if ($featured_products->have_posts()) {
-                            while ($featured_products->have_posts()) {
-                                $featured_products->the_post();
-                                global $product;
-                                ?>
-                                <div class="featured-product-item">
-                                    <div class="featured-product-image">
-                                        <?php
-                                        if (has_post_thumbnail()) {
-                                            the_post_thumbnail('thumbnail', ['alt' => get_the_title()]);
-                                        } else {
-                                            echo wc_placeholder_img(['size' => 'thumbnail', 'alt' => get_the_title()]);
-                                        }
-                                        ?>
-                                    </div>
-                                    <div class="featured-product-details">
-                                        <h4><?php the_title(); ?></h4>
-                                        <p class="featured-product-description">
-                                            <?php echo wp_trim_words(get_the_excerpt(), 10); ?>
-                                        </p>
-                                        <div class="featured-product-meta">
-                                            <?php if ($product->get_rating_count() > 0) : ?>
-                                                <div class="product-rating">
-                                                    <?php esc_html_e('Rating:', 'watchmodmarket'); ?> <?php echo $product->get_average_rating(); ?>/5
-                                                </div>
-                                                <div class="product-reviews">
-                                                    ★★★★★ (<?php echo $product->get_rating_count(); ?>)
-                                                </div>
-                                            <?php endif; ?>
-                                            <div class="product-price"><?php echo $product->get_price_html(); ?></div>
-                                        </div>
+                <div class="featured-product-wrapper">
+                    <?php
+                    $args = array(
+                        'post_type' => 'product',
+                        'posts_per_page' => 1,
+                        'meta_key' => 'total_sales',
+                        'orderby' => 'meta_value_num',
+                        'order' => 'DESC',
+                    );
+                    
+                    $featured_products = new WP_Query($args);
+                    
+                    if ($featured_products->have_posts()) {
+                        while ($featured_products->have_posts()) {
+                            $featured_products->the_post();
+                            global $product;
+                            ?>
+                            <div class="featured-product-item">
+                                <div class="featured-product-image">
+                                    <?php
+                                    if (has_post_thumbnail()) {
+                                        the_post_thumbnail('thumbnail', array('alt' => get_the_title()));
+                                    } else {
+                                        // Fallback placeholder
+                                        echo '<img src="' . esc_url(wc_placeholder_img_src('thumbnail')) . '" alt="' . esc_attr(get_the_title()) . '" class="wp-post-image" />';
+                                    }
+                                    ?>
+                                </div>
+                                <div class="featured-product-details">
+                                    <h4><?php the_title(); ?></h4>
+                                    <p class="featured-product-description">
+                                        <?php echo wp_trim_words(get_the_excerpt(), 10); ?>
+                                    </p>
+                                    <div class="featured-product-meta">
+                                        <?php if ($product && $product->get_rating_count() > 0) : ?>
+                                            <div class="product-rating">
+                                                <?php esc_html_e('Rating:', 'watchmodmarket'); ?> <?php echo esc_html($product->get_average_rating()); ?>/5
+                                            </div>
+                                            <div class="product-reviews">
+                                                ★★★★★ (<?php echo esc_html($product->get_rating_count()); ?>)
+                                            </div>
+                                        <?php endif; ?>
+                                        <div class="product-price"><?php echo wp_kses_post($product->get_price_html()); ?></div>
                                     </div>
                                 </div>
-                                <?php
-                            }
-                            wp_reset_postdata();
+                            </div>
+                            <?php
                         }
+                        wp_reset_postdata();
+                    } else {
                         ?>
-                    </div>
+                        <div class="featured-product-item">
+                            <div class="featured-product-image">
+                                <img src="<?php echo esc_url(wc_placeholder_img_src('thumbnail')); ?>" alt="<?php esc_attr_e('No product available', 'watchmodmarket'); ?>" />
+                            </div>
+                            <div class="featured-product-details">
+                                <h4><?php esc_html_e('Premium Watch Parts', 'watchmodmarket'); ?></h4>
+                                <p class="featured-product-description">
+                                    <?php esc_html_e('Discover our collection of premium watch components and accessories.', 'watchmodmarket'); ?>
+                                </p>
+                                <div class="featured-product-meta">
+                                    <div class="product-price"><?php esc_html_e('From $29.99', 'watchmodmarket'); ?></div>
+                                </div>
+                            </div>
+                        </div>
+                        <?php
+                    }
+                    ?>
 
                     <!-- Filter Section -->
                     <div class="filter-section">

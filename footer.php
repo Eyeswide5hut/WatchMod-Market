@@ -6,146 +6,104 @@
  * @version 1.0.0
  */
 ?>
+
 <footer class="site-footer">
     <!-- Footer Widgets -->
     <div class="footer-widgets">
         <div class="container">
             <div class="footer-grid">
-                <!-- Footer Column 1 -->
-                <div class="footer-col">
+                <!-- Footer Column 1 - Branding & Payment -->
+                <div class="footer-col footer-col--main">
                     <?php if (is_active_sidebar('footer-1')) : ?>
                         <?php dynamic_sidebar('footer-1'); ?>
                     <?php else : ?>
                         <div class="footer-branding">
-                            <?php 
-                            // Display custom logo or site name
-                            if (has_custom_logo()) {
-                                the_custom_logo();
-                            } else {
-                                echo '<h3 class="site-title">' . esc_html(get_bloginfo('name')) . '</h3>';
-                            }
-                            ?>
-                            <p class="site-description"><?php esc_html_e('Premium watch parts and custom building tools for watch enthusiasts, makers, and collectors worldwide.', 'watchmodmarket'); ?></p>
+                            <h3 class="footer-brand-title">WATCH MOD MARKET</h3>
+                            <p class="site-description">Premium watch parts and custom building tools for watch enthusiasts, makers, and collectors worldwide.</p>
                         </div>
                         
                         <!-- Payment Methods -->
                         <div class="payment-methods">
-                            <h4><?php esc_html_e('Secure Payments', 'watchmodmarket'); ?></h4>
+                            <h4>Secure Payments</h4>
                             <div class="payment-icons">
-                                <?php 
-                                // Payment icons
-                                $payment_icons = array(
-                                    'visa.svg' => 'Visa',
-                                    'mastercard.svg' => 'Mastercard',
-                                    'amex.svg' => 'American Express',
-                                    'paypal.svg' => 'PayPal',
-                                    'apple-pay.svg' => 'Apple Pay'
-                                );
-                                
-                                foreach ($payment_icons as $icon => $label) :
-                                    echo '<img src="' . esc_url(get_template_directory_uri() . '/assets/images/payment/' . $icon) . '" alt="' . esc_attr($label) . '" width="40" height="25" loading="lazy">';
-                                endforeach;
-                                ?>
+                                <span class="payment-icon">VISA</span>
+                                <span class="payment-icon">MC</span>
+                                <span class="payment-icon">AMEX</span>
+                                <span class="payment-icon">PP</span>
+                                <span class="payment-icon">AP</span>
                             </div>
                         </div>
                     <?php endif; ?>
                 </div>
                 
-                <!-- Footer Column 2 -->
+                <!-- Footer Column 2 - Shop -->
                 <div class="footer-col">
                     <?php if (is_active_sidebar('footer-2')) : ?>
                         <?php dynamic_sidebar('footer-2'); ?>
                     <?php else : ?>
-                        <h3><?php esc_html_e('Shop', 'watchmodmarket'); ?></h3>
+                        <h3>Shop</h3>
                         <ul class="footer-links">
-                            <li><a href="<?php echo esc_url(get_permalink(wc_get_page_id('shop'))); ?>"><?php esc_html_e('Marketplace', 'watchmodmarket'); ?></a></li>
-                            <?php
-                            // Product categories
-                            $shop_categories = array(
-                                'cases' => __('Cases', 'watchmodmarket'),
-                                'dials' => __('Dials', 'watchmodmarket'),
-                                'movements' => __('Movements', 'watchmodmarket'),
-                                'straps' => __('Straps', 'watchmodmarket'),
-                                'tools' => __('Tools', 'watchmodmarket')
-                            );
-                            
-                            foreach ($shop_categories as $slug => $name) :
-                                echo '<li><a href="' . esc_url(home_url('/shop?category=' . $slug)) . '">' . esc_html($name) . '</a></li>';
-                            endforeach;
-                            ?>
+                            <?php if (class_exists('WooCommerce')) : ?>
+                                <li><a href="<?php echo esc_url(get_permalink(wc_get_page_id('shop'))); ?>">Marketplace</a></li>
+                            <?php endif; ?>
+                            <li><a href="<?php echo esc_url(home_url('/product-category/cases/')); ?>">Cases</a></li>
+                            <li><a href="<?php echo esc_url(home_url('/product-category/dials/')); ?>">Dials</a></li>
+                            <li><a href="<?php echo esc_url(home_url('/product-category/movements/')); ?>">Movements</a></li>
+                            <li><a href="<?php echo esc_url(home_url('/product-category/straps/')); ?>">Straps</a></li>
+                            <li><a href="<?php echo esc_url(home_url('/product-category/tools/')); ?>">Tools</a></li>
                         </ul>
                     <?php endif; ?>
                 </div>
                 
-                <!-- Footer Column 3 -->
+                <!-- Footer Column 3 - Services -->
                 <div class="footer-col">
                     <?php if (is_active_sidebar('footer-3')) : ?>
                         <?php dynamic_sidebar('footer-3'); ?>
                     <?php else : ?>
-                        <h3><?php esc_html_e('Services', 'watchmodmarket'); ?></h3>
+                        <h3>Services</h3>
                         <ul class="footer-links">
-                            <?php
-                            // Service pages
-                            $service_pages = array(
-                                '/builder' => __('Watch Builder', 'watchmodmarket'),
-                                '/group-buy' => __('Group Buys', 'watchmodmarket'),
-                                '/community-posts' => __('Community', 'watchmodmarket'),
-                                '/workshops' => __('Workshops', 'watchmodmarket'),
-                                '/gift-cards' => __('Gift Cards', 'watchmodmarket')
-                            );
-                            
-                            foreach ($service_pages as $slug => $name) :
-                                echo '<li><a href="' . esc_url(home_url($slug)) . '">' . esc_html($name) . '</a></li>';
-                            endforeach;
-                            
-                            // Special link for custom builds archive
-                            if (post_type_exists('watch_build')) :
-                                echo '<li><a href="' . esc_url(get_post_type_archive_link('watch_build')) . '">' . esc_html__('Custom Builds', 'watchmodmarket') . '</a></li>';
-                            endif;
-                            ?>
+                            <li><a href="<?php echo esc_url(get_permalink(get_page_by_path('builder'))); ?>">Watch Builder</a></li>
+                            <li><a href="<?php echo esc_url(get_permalink(get_page_by_path('group-buy'))); ?>">Group Buys</a></li>
+                            <li><a href="<?php echo esc_url(get_permalink(get_page_by_path('community'))); ?>">Community</a></li>
+                            <li><a href="<?php echo esc_url(home_url('/workshops/')); ?>">Workshops</a></li>
+                            <li><a href="<?php echo esc_url(home_url('/gift-cards/')); ?>">Gift Cards</a></li>
+                            <?php if (post_type_exists('watch_build')) : ?>
+                                <li><a href="<?php echo esc_url(get_post_type_archive_link('watch_build')); ?>">Custom Builds</a></li>
+                            <?php endif; ?>
                         </ul>
                     <?php endif; ?>
                 </div>
                 
-                <!-- Footer Column 4 -->
+                <!-- Footer Column 4 - Help & Support -->
                 <div class="footer-col">
                     <?php if (is_active_sidebar('footer-4')) : ?>
                         <?php dynamic_sidebar('footer-4'); ?>
                     <?php else : ?>
-                        <h3><?php esc_html_e('Help & Support', 'watchmodmarket'); ?></h3>
+                        <h3>Help & Support</h3>
                         <ul class="footer-links">
-                            <?php
-                            // Support pages
-                            $support_pages = array(
-                                '/contact' => __('Contact Us', 'watchmodmarket'),
-                                '/shipping-returns' => __('Shipping & Returns', 'watchmodmarket'),
-                                '/faq' => __('FAQ', 'watchmodmarket'),
-                                '/privacy-policy' => __('Privacy Policy', 'watchmodmarket'),
-                                '/terms' => __('Terms of Service', 'watchmodmarket')
-                            );
-                            
-                            foreach ($support_pages as $slug => $name) :
-                                echo '<li><a href="' . esc_url(home_url($slug)) . '">' . esc_html($name) . '</a></li>';
-                            endforeach;
-                            ?>
+                            <li><a href="<?php echo esc_url(get_permalink(get_page_by_path('contact'))); ?>">Contact Us</a></li>
+                            <li><a href="<?php echo esc_url(home_url('/shipping-returns/')); ?>">Shipping & Returns</a></li>
+                            <li><a href="<?php echo esc_url(get_permalink(get_page_by_path('faq'))); ?>">FAQ</a></li>
+                            <li><a href="<?php echo esc_url(get_privacy_policy_url()); ?>">Privacy Policy</a></li>
+                            <li><a href="<?php echo esc_url(home_url('/terms/')); ?>">Terms of Service</a></li>
                         </ul>
+                        
+                        <!-- Contact Info -->
+                        <div class="contact-info">
+                            <p>
+                                <i class="fa fa-envelope" aria-hidden="true"></i>
+                                <a href="mailto:<?php echo esc_attr(get_theme_mod('contact_email', 'support@watchmodmarket.com')); ?>">
+                                    <?php echo esc_html(get_theme_mod('contact_email', 'support@watchmodmarket.com')); ?>
+                                </a>
+                            </p>
+                            <p>
+                                <i class="fa fa-phone" aria-hidden="true"></i>
+                                <a href="tel:<?php echo esc_attr(str_replace([' ', '(', ')', '-'], '', get_theme_mod('contact_phone', '+18005551234'))); ?>">
+                                    <?php echo esc_html(get_theme_mod('contact_phone', '+1 (800) 555-1234')); ?>
+                                </a>
+                            </p>
+                        </div>
                     <?php endif; ?>
-                    
-                    <!-- Contact Info -->
-                    <div class="contact-info">
-                        <p>
-                            <i class="fa fa-envelope"></i> 
-                            <a href="mailto:<?php echo esc_attr(get_theme_mod('contact_email', 'support@watchmodmarket.com')); ?>">
-                                <?php echo esc_html(get_theme_mod('contact_email', 'support@watchmodmarket.com')); ?>
-                            </a>
-                        </p>
-                        <p>
-                            <i class="fa fa-phone"></i> 
-                            <a href="tel:<?php echo esc_attr(get_theme_mod('contact_phone', '+18005551234')); ?>">
-                                <?php echo esc_html(get_theme_mod('contact_phone', '+1 (800) 555-1234')); ?>
-                            </a>
-                        </p>
-                    </div>
                 </div>
             </div>
         </div>
@@ -157,27 +115,26 @@
             <div class="footer-bottom-wrap">
                 <!-- Copyright -->
                 <div class="copyright">
-                    <p>&copy; <?php echo date('Y'); ?> <?php bloginfo('name'); ?>. <?php esc_html_e('All rights reserved.', 'watchmodmarket'); ?></p>
+                    <p>&copy; <?php echo date('Y'); ?> <?php bloginfo('name'); ?>. All rights reserved.</p>
                 </div>
                 
                 <!-- Social Links -->
                 <div class="social-links">
                     <?php
-                    // Social media links
                     $social_networks = array(
-                        'facebook' => __('Facebook', 'watchmodmarket'),
-                        'instagram' => __('Instagram', 'watchmodmarket'),
-                        'twitter' => __('Twitter', 'watchmodmarket'),
-                        'youtube' => __('YouTube', 'watchmodmarket'),
-                        'pinterest' => __('Pinterest', 'watchmodmarket')
+                        'facebook' => array('label' => 'Facebook', 'icon' => 'fa-facebook'),
+                        'instagram' => array('label' => 'Instagram', 'icon' => 'fa-instagram'),
+                        'twitter' => array('label' => 'Twitter', 'icon' => 'fa-twitter'),
+                        'youtube' => array('label' => 'YouTube', 'icon' => 'fa-youtube'),
+                        'pinterest' => array('label' => 'Pinterest', 'icon' => 'fa-pinterest')
                     );
                     
-                    foreach ($social_networks as $network => $label) :
-                        $network_url = get_theme_mod('social_' . $network, 'https://' . $network . '.com/watchmodmarket');
+                    foreach ($social_networks as $network => $details) :
+                        $network_url = get_theme_mod('social_' . $network, '');
                         if (!empty($network_url)) :
                     ?>
-                        <a href="<?php echo esc_url($network_url); ?>" target="_blank" rel="noopener" aria-label="<?php echo esc_attr($label); ?>">
-                            <i class="fa fa-<?php echo esc_attr($network); ?>"></i>
+                        <a href="<?php echo esc_url($network_url); ?>" target="_blank" rel="noopener" aria-label="<?php echo esc_attr($details['label']); ?>">
+                            <i class="fa <?php echo esc_attr($details['icon']); ?>" aria-hidden="true"></i>
                         </a>
                     <?php
                         endif;
@@ -187,41 +144,26 @@
                 
                 <!-- Footer Mini Links -->
                 <div class="footer-links-mini">
-                    <?php
-                    // Legal pages
-                    $legal_pages = array(
-                        '/terms' => __('Terms', 'watchmodmarket'),
-                        '/privacy-policy' => __('Privacy', 'watchmodmarket'),
-                        '/cookies' => __('Cookies', 'watchmodmarket')
-                    );
-                    
-                    foreach ($legal_pages as $slug => $name) :
-                        echo '<a href="' . esc_url(home_url($slug)) . '">' . esc_html($name) . '</a>';
-                    endforeach;
-                    ?>
+                    <a href="<?php echo esc_url(home_url('/terms/')); ?>">Terms</a>
+                    <a href="<?php echo esc_url(get_privacy_policy_url()); ?>">Privacy</a>
+                    <a href="<?php echo esc_url(home_url('/cookies/')); ?>">Cookies</a>
                 </div>
             </div>
         </div>
     </div>
 </footer>
 
-<!-- Back to Top Button -->
-<button id="back-to-top" aria-label="<?php esc_attr_e('Back to top', 'watchmodmarket'); ?>">
-    <i class="fa fa-arrow-up"></i>
-</button>
+
 
 <?php wp_footer(); ?>
 
 <script>
-// Essential footer scripts
-(function() {
-    // Back to Top Button
+// Back to Top Button functionality
+document.addEventListener('DOMContentLoaded', function() {
     const backToTopButton = document.getElementById('back-to-top');
+    
     if (backToTopButton) {
-        // Initially hide the button
-        backToTopButton.classList.remove('show');
-        
-        // Show button when scrolling down
+        // Show/hide button based on scroll position
         window.addEventListener('scroll', function() {
             if (window.pageYOffset > 300) {
                 backToTopButton.classList.add('show');
@@ -238,20 +180,7 @@
             });
         });
     }
-    
-    // Initialize Instagram slider if Flickity exists
-    const instaSlider = document.querySelector('.instagram-feed-slider');
-    if (instaSlider && typeof Flickity === 'function') {
-        new Flickity(instaSlider, {
-            cellAlign: 'left',
-            contain: true,
-            wrapAround: true,
-            autoPlay: 3000,
-            prevNextButtons: false,
-            pageDots: false
-        });
-    }
-})();
+});
 </script>
 </body>
 </html>

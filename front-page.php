@@ -10,13 +10,6 @@ get_header();
 // Display test promo banner (remove after testing)
 // This will always show the banner for now
 ?>
-<section class="promo-banner" aria-label="<?php esc_attr_e('Promotional Banner', 'watchmodmarket'); ?>">
-    <div class="container">
-        <p>🎉 Become part of a community and make massive savings
-            <a href="<?php echo esc_url(wc_get_page_id('group-buy')); ?>"><?php esc_html_e('Today!', 'watchmodmarket'); ?></a>
-        </p>
-    </div>
-</section>
 
 <section class="hero-section">
     <div class="hero-overlay"></div>

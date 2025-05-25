@@ -172,59 +172,91 @@
 <?php endif; ?>
 
 <script>
+
+// Add this to the end of your header.php or in a separate JS file
 document.addEventListener('DOMContentLoaded', function() {
-    // Handle announcement bar interactions
     const announcementBar = document.querySelector('.announcement-bar');
     
-    if (announcementBar) {
-        // Handle close button
-        const closeButton = announcementBar.querySelector('.announcement-close');
-        if (closeButton) {
-            closeButton.addEventListener('click', function() {
-                announcementBar.style.transform = 'translateY(-100%)';
-                announcementBar.style.transition = 'transform 0.3s ease';
-                setTimeout(() => {
-                    announcementBar.style.display = 'none';
-                    // Store dismissal in localStorage
-                    localStorage.setItem('announcement_dismissed', 'true');
-                }, 300);
-            });
-        }
+    if (!announcementBar) {
+        console.log('Announcement bar not found in DOM');
+        return;
+    }
 
-        // Check if announcement was previously dismissed
-        if (localStorage.getItem('announcement_dismissed') === 'true') {
+    console.log('Announcement bar found and initializing...');
+    
+    // Handle close button
+    const closeButton = announcementBar.querySelector('.announcement-close');
+    if (closeButton) {
+        closeButton.addEventListener('click', function() {
+            console.log('Closing announcement bar');
+            announcementBar.style.transform = 'translateY(-100%)';
+            announcementBar.style.transition = 'transform 0.3s ease';
+            setTimeout(function() {
+                announcementBar.style.display = 'none';
+            }, 300);
+            localStorage.setItem('announcement_dismissed_' + new Date().toISOString().split('T')[0], 'true');
+        });
+        
+        // Check if dismissed today
+        const today = new Date().toISOString().split('T')[0];
+        if (localStorage.getItem('announcement_dismissed_' + today) === 'true') {
             announcementBar.style.display = 'none';
         }
+    }
 
-        // Handle currency selector
-        const currencySelector = document.getElementById('currency-selector');
-        if (currencySelector) {
-            currencySelector.addEventListener('change', function() {
-                // Add your currency change logic here
-                console.log('Currency changed to:', this.value);
-                
-                // Example: Send AJAX request to update currency
-                if (typeof jQuery !== 'undefined') {
-                    jQuery.post(watchmodmarket_ajax.ajax_url, {
-                        action: 'update_currency',
-                        currency: this.value,
-                        nonce: watchmodmarket_ajax.nonce
-                    });
-                }
-            });
+    // Handle currency selector
+    const currencySelector = document.getElementById('currency-selector');
+    if (currencySelector) {
+        currencySelector.addEventListener('change', function() {
+            console.log('Currency changed to:', this.value);
+            localStorage.setItem('watchmodmarket_currency', this.value);
+            
+            // Only make AJAX call if the global variable exists
+            if (typeof watchmodmarket_ajax !== 'undefined') {
+                fetch(watchmodmarket_ajax.ajax_url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'action=update_currency&currency=' + this.value + '&nonce=' + watchmodmarket_ajax.nonce
+                })
+                .then(response => response.json())
+                .then(data => console.log('Currency update response:', data))
+                .catch(error => console.error('Currency update error:', error));
+            }
+        });
+        
+        // Set saved currency
+        const savedCurrency = localStorage.getItem('watchmodmarket_currency');
+        if (savedCurrency) {
+            currencySelector.value = savedCurrency;
         }
+    }
 
-        // Handle language selector
-        const languageSelector = document.getElementById('language-selector');
-        if (languageSelector) {
-            languageSelector.addEventListener('change', function() {
-                // Add your language change logic here
-                console.log('Language changed to:', this.value);
-                
-                // Example: Redirect to language-specific URL
-                // window.location.href = window.location.href + '?lang=' + this.value;
-            });
+    // Handle language selector
+    const languageSelector = document.getElementById('language-selector');
+    if (languageSelector) {
+        languageSelector.addEventListener('change', function() {
+            console.log('Language changed to:', this.value);
+            localStorage.setItem('watchmodmarket_language', this.value);
+            // Add your language change logic here
+        });
+        
+        // Set saved language
+        const savedLanguage = localStorage.getItem('watchmodmarket_language');
+        if (savedLanguage) {
+            languageSelector.value = savedLanguage;
         }
+    }
+    
+    // Auto-hide functionality (if enabled via customizer)
+    const autoHideTime = announcementBar.dataset.autoHide;
+    if (autoHideTime && parseInt(autoHideTime) > 0) {
+        setTimeout(function() {
+            announcementBar.style.opacity = '0.8';
+            announcementBar.classList.add('auto-hiding');
+        }, parseInt(autoHideTime) * 1000);
     }
 });
 </script>
+
