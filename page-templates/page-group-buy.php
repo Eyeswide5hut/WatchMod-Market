@@ -17,26 +17,6 @@ get_header();
         </div>
     </div>
     
-    <!-- Quick Navigation -->
-    <nav class="quick-nav">
-        <div class="container quick-nav-container">          
-            <div class="quick-stats">
-                <div class="stat-item">
-                    <span><?php echo esc_html__('Active Campaigns:', 'watchmodmarket'); ?></span>
-                    <span class="stat-value"><?php echo esc_html(watchmodmarket_get_active_campaigns_count()); ?></span>
-                </div>
-                <div class="stat-item">
-                    <span><?php echo esc_html__('Members Saving:', 'watchmodmarket'); ?></span>
-                    <span class="stat-value"><?php echo esc_html(watchmodmarket_get_total_savings()); ?></span>
-                </div>
-                <div class="stat-item">
-                    <span><?php echo esc_html__('Success Rate:', 'watchmodmarket'); ?></span>
-                    <span class="stat-value"><?php echo esc_html(watchmodmarket_get_success_rate()); ?></span>
-                </div>
-            </div>
-        </div>
-    </nav>
-    
     <!-- Active Group Buys -->
     <section id="active-buys" class="active-group-buys">
         <div class="container">
@@ -385,144 +365,6 @@ get_header();
         </div>
     </section>
     
-    <!-- Testimonials Section - Social Proof -->
-    <section class="testimonials-section">
-        <div class="container">
-            <div class="section-header">
-                <h2><?php echo esc_html__('What Our Members Say', 'watchmodmarket'); ?></h2>
-                <p class="section-subheading"><?php echo esc_html__('Real experiences from our community members', 'watchmodmarket'); ?></p>
-            </div>
-            
-            <div class="testimonials-grid">
-                <?php
-                // Testimonial data - can be converted to a custom post type in a more advanced implementation
-                $testimonials = array(
-                    array(
-                        'content' => __('The NH35 Group Buy was my first experience with WatchModMarket\'s Group Buy Portal, and it was exceptional. Saved 35% on premium movements and the process was transparent from start to finish.', 'watchmodmarket'),
-                        'name' => 'David H.',
-                        'location' => 'New York, USA',
-                        'avatar' => 'avatar-1.jpg'
-                    ),
-                    array(
-                        'content' => __('Pre-ordering the limited edition Seiko mod dials gave me access to designs that sold out within hours of regular release. The deposit system is fair, and communication was excellent.', 'watchmodmarket'),
-                        'name' => 'Sarah T.',
-                        'location' => 'London, UK',
-                        'avatar' => 'avatar-2.jpg'
-                    ),
-                    array(
-                        'content' => __('The sapphire crystal group buy exceeded my expectations. The quality is identical to retail, but at nearly 40% off! Will definitely participate in future campaigns.', 'watchmodmarket'),
-                        'name' => 'Michael K.',
-                        'location' => 'Sydney, Australia',
-                        'avatar' => 'avatar-3.jpg'
-                    )
-                );
-                
-                foreach ($testimonials as $testimonial) :
-                ?>
-                <div class="testimonial-card">
-                    <div class="testimonial-content">
-                        <p><?php echo esc_html($testimonial['content']); ?></p>
-                    </div>
-                    <div class="testimonial-author">
-                        <div class="author-avatar">
-                            <img src="<?php echo esc_url(get_template_directory_uri() . '/assets/images/testimonials/' . $testimonial['avatar']); ?>" alt="<?php echo esc_attr($testimonial['name']); ?>" width="60" height="60">
-                        </div>
-                        <div class="author-info">
-                            <div class="author-name"><?php echo esc_html($testimonial['name']); ?></div>
-                            <div class="author-location"><?php echo esc_html($testimonial['location']); ?></div>
-                        </div>
-                    </div>
-                </div>
-                <?php endforeach; ?>
-            </div>
-        </div>
-    </section>
-    
-    <!-- Trust Badges Section -->
-    <section class="trust-badges-section">
-        <div class="container">
-            <div class="badges-grid">
-                <div class="badge-item">
-                    <div class="badge-icon">🔒</div>
-                    <div class="badge-text">
-                        <h3><?php echo esc_html__('Secure Payments', 'watchmodmarket'); ?></h3>
-                        <p><?php echo esc_html__('All transactions are encrypted and secure', 'watchmodmarket'); ?></p>
-                    </div>
-                </div>
-                
-                <div class="badge-item">
-                    <div class="badge-icon">🛡️</div>
-                    <div class="badge-text">
-                        <h3><?php echo esc_html__('Money-Back Guarantee', 'watchmodmarket'); ?></h3>
-                        <p><?php echo esc_html__('Full refund if group buy doesn\'t proceed', 'watchmodmarket'); ?></p>
-                    </div>
-                </div>
-                
-                <div class="badge-item">
-                    <div class="badge-icon">📦</div>
-                    <div class="badge-text">
-                        <h3><?php echo esc_html__('Quality Assured', 'watchmodmarket'); ?></h3>
-                        <p><?php echo esc_html__('Same warranty as our regular products', 'watchmodmarket'); ?></p>
-                    </div>
-                </div>
-                
-                <div class="badge-item">
-                    <div class="badge-icon">💯</div>
-                    <div class="badge-text">
-                        <h3><?php echo esc_html__('98% Success Rate', 'watchmodmarket'); ?></h3>
-                        <p><?php echo esc_html__('Nearly all our group buys reach their goal', 'watchmodmarket'); ?></p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-    
-    <!-- Newsletter Section -->
-    <section class="group-newsletter">
-        <div class="container">
-            <div class="newsletter-content">
-                <h2><?php echo esc_html__('Get Notified About New Opportunities', 'watchmodmarket'); ?></h2>
-                <p><?php echo esc_html__('Subscribe to receive alerts about upcoming Group Buys and Pre-Orders. Subscribers get early access before public release!', 'watchmodmarket'); ?></p>
-                
-                <form class="newsletter-form" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" method="post">
-                    <input type="hidden" name="action" value="watchmodmarket_group_signup">
-                    <?php wp_nonce_field('group_signup', 'group_nonce'); ?>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="subscriber-name" class="visually-hidden"><?php echo esc_html__('Your Name', 'watchmodmarket'); ?></label>
-                            <input type="text" id="subscriber-name" name="name" placeholder="<?php echo esc_attr__('Your Name', 'watchmodmarket'); ?>" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="subscriber-email" class="visually-hidden"><?php echo esc_html__('Your Email', 'watchmodmarket'); ?></label>
-                            <input type="email" id="subscriber-email" name="email" placeholder="<?php echo esc_attr__('Your Email', 'watchmodmarket'); ?>" required>
-                        </div>
-                        
-                        <button type="submit" class="btn btn-primary"><?php echo esc_html__('Subscribe', 'watchmodmarket'); ?></button>
-                    </div>
-                    
-                    <div class="form-preferences">
-                        <p><?php echo esc_html__('I\'m interested in:', 'watchmodmarket'); ?></p>
-                        <label>
-                            <input type="checkbox" name="interests[]" value="group-buys" checked>
-                            <?php echo esc_html__('Group Buys', 'watchmodmarket'); ?>
-                        </label>
-                        <label>
-                            <input type="checkbox" name="interests[]" value="pre-orders" checked>
-                            <?php echo esc_html__('Pre-Orders', 'watchmodmarket'); ?>
-                        </label>
-                        <label>
-                            <input type="checkbox" name="interests[]" value="limited-editions">
-                            <?php echo esc_html__('Limited Editions', 'watchmodmarket'); ?>
-                        </label>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </section>
-
-    
     <!-- FAQ Section -->
     <section id="faq" class="faq-section">
         <div class="container">
@@ -588,7 +430,46 @@ get_header();
             </div>
         </div>
     </section>
+   
     
+    <!-- Trust Badges Section -->
+    <section class="trust-badges-section">
+        <div class="container">
+            <div class="badges-grid">
+                <div class="badge-item">
+                    <div class="badge-icon">🔒</div>
+                    <div class="badge-text">
+                        <h3><?php echo esc_html__('Secure Payments', 'watchmodmarket'); ?></h3>
+                        <p><?php echo esc_html__('All transactions are encrypted and secure', 'watchmodmarket'); ?></p>
+                    </div>
+                </div>
+                
+                <div class="badge-item">
+                    <div class="badge-icon">🛡️</div>
+                    <div class="badge-text">
+                        <h3><?php echo esc_html__('Money-Back Guarantee', 'watchmodmarket'); ?></h3>
+                        <p><?php echo esc_html__('Full refund if group buy doesn\'t proceed', 'watchmodmarket'); ?></p>
+                    </div>
+                </div>
+                
+                <div class="badge-item">
+                    <div class="badge-icon">📦</div>
+                    <div class="badge-text">
+                        <h3><?php echo esc_html__('Quality Assured', 'watchmodmarket'); ?></h3>
+                        <p><?php echo esc_html__('Same warranty as our regular products', 'watchmodmarket'); ?></p>
+                    </div>
+                </div>
+                
+                <div class="badge-item">
+                    <div class="badge-icon">💯</div>
+                    <div class="badge-text">
+                        <h3><?php echo esc_html__('98% Success Rate', 'watchmodmarket'); ?></h3>
+                        <p><?php echo esc_html__('Nearly all our group buys reach their goal', 'watchmodmarket'); ?></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 <?php
 /**
  * Newsletter Section Template
@@ -596,115 +477,6 @@ get_header();
  * This can be included in front-page.php or as a template part
  */
 ?>
-
-<section class="newsletter-section">
-    <div class="container">
-        <div class="newsletter-container">
-            <div class="newsletter-content">
-                <div class="newsletter-text">
-                    <h2><?php echo esc_html__('Join Our Community', 'watchmodmarket'); ?></h2>
-                    <p class="newsletter-description">
-                        <?php echo esc_html__('Subscribe to get exclusive offers, early access to new parts drops, and 10% off your first order.', 'watchmodmarket'); ?>
-                    </p>
-                    <div class="benefits-list">
-                        <div class="benefit-item">
-                            <i class="fa fa-tag"></i>
-                            <span><?php echo esc_html__('Exclusive Discounts', 'watchmodmarket'); ?></span>
-                        </div>
-                        <div class="benefit-item">
-                            <i class="fa fa-clock"></i>
-                            <span><?php echo esc_html__('Early Access', 'watchmodmarket'); ?></span>
-                        </div>
-                        <div class="benefit-item">
-                            <i class="fa fa-users"></i>
-                            <span><?php echo esc_html__('Community Events', 'watchmodmarket'); ?></span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="newsletter-form-container">
-                    <?php
-                    // Check if Mailchimp for WP is active
-                    if (function_exists('mc4wp_show_form')) {
-                        mc4wp_show_form();
-                    } else {
-                    ?>
-                    <form class="newsletter-form" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" method="post">
-                        <input type="hidden" name="action" value="watchmodmarket_newsletter_signup">
-                        <?php wp_nonce_field('newsletter_signup', 'newsletter_nonce'); ?>
-                        
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="newsletter-name"><?php esc_html_e('Your Name', 'watchmodmarket'); ?></label>
-                                <input type="text" id="newsletter-name" name="name" placeholder="<?php esc_attr_e('John Doe', 'watchmodmarket'); ?>" required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="newsletter-email"><?php esc_html_e('Your Email', 'watchmodmarket'); ?></label>
-                                <input type="email" id="newsletter-email" name="email" placeholder="<?php esc_attr_e('email@example.com', 'watchmodmarket'); ?>" required>
-                            </div>
-                        </div>
-                        
-                        <div class="form-preferences">
-                            <p><?php esc_html_e('I\'m interested in:', 'watchmodmarket'); ?></p>
-                            <label class="checkbox-label">
-                                <input type="checkbox" name="interests[]" value="new-parts" checked>
-                                <span class="checkbox-text"><?php esc_html_e('New Parts', 'watchmodmarket'); ?></span>
-                            </label>
-                            <label class="checkbox-label">
-                                <input type="checkbox" name="interests[]" value="group-buys" checked>
-                                <span class="checkbox-text"><?php esc_html_e('Group Buys', 'watchmodmarket'); ?></span>
-                            </label>
-                            <label class="checkbox-label">
-                                <input type="checkbox" name="interests[]" value="tutorials">
-                                <span class="checkbox-text"><?php esc_html_e('Tutorials', 'watchmodmarket'); ?></span>
-                            </label>
-                        </div>
-                        
-                        <div class="privacy-note">
-                            <p><?php esc_html_e('By subscribing, you agree to our Privacy Policy. You can unsubscribe at any time.', 'watchmodmarket'); ?></p>
-                        </div>
-                        
-                        <button type="submit" class="btn btn-primary btn-subscribe">
-                            <?php esc_html_e('Subscribe', 'watchmodmarket'); ?>
-                            <i class="fa fa-arrow-right"></i>
-                        </button>
-                    </form>
-                    <?php } ?>
-                </div>
-            </div>
-            
-            <div class="newsletter-image">
-                <img src="<?php echo esc_url(get_template_directory_uri()); ?>/assets/images/newsletter-image.jpg" alt="<?php esc_attr_e('Watch parts collection', 'watchmodmarket'); ?>" width="500" height="400" loading="lazy">
-            </div>
-        </div>
-        
-        <!-- Newsletter testimonials -->
-        <div class="newsletter-testimonials">
-            <div class="testimonial-slider">
-                <div class="testimonial-item">
-                    <div class="testimonial-avatar">
-                        <img src="<?php echo esc_url(get_template_directory_uri()); ?>/assets/images/testimonials/avatar-1.jpg" alt="<?php echo esc_attr__('Member avatar', 'watchmodmarket'); ?>" width="60" height="60" loading="lazy">
-                    </div>
-                    <div class="testimonial-content">
-                        <p>"<?php echo esc_html__('Getting early access to the Seiko mod parts saved me hundreds! The newsletter is the best way to never miss a deal.', 'watchmodmarket'); ?>"</p>
-                        <span class="testimonial-author">- <?php echo esc_html__('James T., Member since 2022', 'watchmodmarket'); ?></span>
-                    </div>
-                </div>
-                
-                <div class="testimonial-item">
-                    <div class="testimonial-avatar">
-                        <img src="<?php echo esc_url(get_template_directory_uri()); ?>/assets/images/testimonials/avatar-2.jpg" alt="<?php echo esc_attr__('Member avatar', 'watchmodmarket'); ?>" width="60" height="60" loading="lazy">
-                    </div>
-                    <div class="testimonial-content">
-                        <p>"<?php echo esc_html__('The weekly updates keep me informed about new releases. Absolutely worth subscribing!', 'watchmodmarket'); ?>"</p>
-                        <span class="testimonial-author">- <?php echo esc_html__('Sarah L., Member since 2023', 'watchmodmarket'); ?></span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
 
 <style>
 /* Enhanced Newsletter Styles */

@@ -30,16 +30,8 @@
 <div class="announcement-bar <?php echo esc_attr(get_theme_mod('announcement_style', 'default')); ?>">
     <div class="container">
         <div class="announcement-content">
-            <p>
-                <?php 
-                $announcement_text = get_theme_mod('announcement_text', __('🎉 Free shipping on orders over $100 | 30-day returns', 'watchmodmarket'));
-                echo esc_html($announcement_text);
-                ?>
-                <?php if (get_theme_mod('announcement_link')) : ?>
-                    <a href="<?php echo esc_url(get_theme_mod('announcement_link')); ?>" class="announcement-link">
-                        <?php echo esc_html(get_theme_mod('announcement_link_text', __('Shop Now!', 'watchmodmarket'))); ?>
-                    </a>
-                <?php endif; ?>
+            <p>📦 New Product Launch: Premium Swiss Movements Now Available 
+                        <a href="#" class="announcement-link">Explore</a>
             </p>
         </div>
         
@@ -114,43 +106,11 @@
                 
                 <div class="user-actions">
                     <?php if (class_exists('WooCommerce')) : ?>
+                        
                         <!-- Account Link -->
                         <a href="<?php echo esc_url(get_permalink(get_option('woocommerce_myaccount_page_id'))); ?>" class="icon-link" aria-label="<?php esc_attr_e('My Account', 'watchmodmarket'); ?>">
                             <i class="fa-solid fa-user"></i>
                         </a>
-                        
-                        <!-- Wishlist Link -->
-                        <?php if (function_exists('YITH_WCWL')) : 
-                            $wishlist_count = YITH_WCWL()->count_products();
-                        ?>
-                            <a href="<?php echo esc_url(get_permalink(get_option('yith_wcwl_wishlist_page_id'))); ?>" class="icon-link wishlist-icon" aria-label="<?php esc_attr_e('Wishlist', 'watchmodmarket'); ?>">
-                                <i class="fa-solid fa-heart"></i>
-                                <?php if ($wishlist_count > 0) : ?>
-                                    <span class="wishlist-count"><?php echo esc_html($wishlist_count); ?></span>
-                                <?php endif; ?>
-                            </a>
-                        <?php else : ?>
-                            <?php 
-                            // Custom wishlist implementation
-                            $watchlist_url = get_permalink(get_option('woocommerce_myaccount_page_id'));
-                            $watchlist_url = trailingslashit($watchlist_url) . 'watchlist/';
-                            
-                            // Get custom wishlist count if available
-                            $watchlist_count = 0;
-                            if (is_user_logged_in()) {
-                                $wishlist = get_user_meta(get_current_user_id(), 'watchmodmarket_wishlist', true);
-                                if (is_array($wishlist)) {
-                                    $watchlist_count = count($wishlist);
-                                }
-                            }
-                            ?>
-                            <a href="<?php echo esc_url($watchlist_url); ?>" class="icon-link wishlist-icon" aria-label="<?php esc_attr_e('Wishlist', 'watchmodmarket'); ?>">
-                                <i class="fa-solid fa-heart"></i>
-                                <?php if ($watchlist_count > 0) : ?>
-                                    <span class="wishlist-count"><?php echo esc_html($watchlist_count); ?></span>
-                                <?php endif; ?>
-                            </a>
-                        <?php endif; ?>
                         
                         <!-- Cart Link -->
                         <a href="<?php echo esc_url(wc_get_cart_url()); ?>" class="icon-link cart-icon" aria-label="<?php esc_attr_e('Shopping Cart', 'watchmodmarket'); ?>">

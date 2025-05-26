@@ -31,6 +31,8 @@
     /* Light gray */
     --color-neutral: #999999;
     /* Gray */
+    --color-blue: #2d87ee; 
+    /* Blue */
 
     /* Typography */
     --font-heading: 'Arial Black', 'Impact', sans-serif;

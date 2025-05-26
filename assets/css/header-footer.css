@@ -16,7 +16,7 @@
 
 /* ======= Announcement Bar ======= */
 .announcement-bar {
-    background-color: var(--color-primary);
+    background-color: var(--color-blue);
     color: var(--color-white);
     padding: 8px 0;
     font-size: 0.9rem;
